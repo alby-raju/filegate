@@ -182,3 +182,13 @@ preparation, storage qualification, security review and adoption evidence.
   outcomes are typed, and test fixtures no longer depend on test classes. Shared
   Maven test configuration and JUnit version are declared once. A clean reactor
   build passes all 66 native tests; core still requires only `java.base`.
+
+- Architecture cleanup 4: restricted image facade delegates to separate PNG,
+  JPEG, zlib-scanline and JDK-decoder components. Geometry budgets are shared;
+  parsers and decoder are hidden by the image module. The unused image-to-worker
+  dependency is removed. JPEG frame/table/scan checks have named operations, and
+  decoded storage is released on blocking warnings as well as success. The
+  existing regression suite still passes all 66 native tests.
+- Refactored worker CI: [run 41300740992](https://github.com/alby-raju/filegate/actions/runs/41300740992)
+  passes on Linux and macOS, including actual container restrictions and timeout
+  cleanup for commit `211b0c5`.

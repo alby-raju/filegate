@@ -26,7 +26,7 @@ limitations under the License.
   <name>FileGate Restricted Images</name>
   <dependencies>
     <dependency><groupId>dev.filegate</groupId><artifactId>filegate-core</artifactId><version>${project.version}</version></dependency>
-    <dependency><groupId>dev.filegate</groupId><artifactId>filegate-worker</artifactId><version>${project.version}</version></dependency>
+
     <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
 </project>
