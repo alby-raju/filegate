@@ -259,3 +259,11 @@ preparation, storage qualification, security review and adoption evidence.
   views. The full native suite passes 88 tests; four container tests are skipped
   locally. Package candidates still grant no acceptance evidence. Workbook/Word
   semantics, formulas, media coverage and isolated document execution remain open.
+
+- M3.2 basic-XLSX semantics: added a separate POI 6.0.0 spreadsheet module with
+  pre-allocation XML/feature/object bounds, closed part roles and schema checks,
+  all-sheet/name inspection and parsed-token formula policy. Normal/shared formulas,
+  local references, hidden sheets, styles and explicit worksheet hyperlinks have
+  regression evidence. Sixteen spreadsheet/formula tests pass locally; approval
+  integration is the next slice. Charts/tables/media/comments and wider XLSX target
+  features are not claimed. Core remains independent of the parser dependencies.

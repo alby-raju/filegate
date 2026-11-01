@@ -12,6 +12,7 @@ flowchart BT
     Worker["filegate-worker"] --> Core["filegate-core · java.base"]
     Images["filegate-format-images · java.desktop"] --> Core
     Office["filegate-format-office · java.base/java.xml · inventory only"]
+    Spreadsheets["filegate-format-spreadsheets · POI · worker-only"] --> Office
     ImageWorker["filegate-images-worker"] --> Worker
     ImageWorker --> Images
     Examples["filegate-examples"] --> Core

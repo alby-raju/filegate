@@ -48,10 +48,26 @@ public final class OfficeManifestReader {
 	}
 
 	public OfficePackageManifest read(Path captured) throws IOException {
+		return read(captured, (part, element, attributes) -> { });
+	}
+
+	public OfficePackageManifest read(Path captured, OfficeElementObserver observer) throws IOException {
+		Objects.requireNonNull(observer, "observer");
 		var defaults = new HashMap<String, String>();
 		var overrides = new HashMap<String, String>();
 		var declarations = new HashMap<String, List<Map<String, String>>>();
-		var inventory = new OfficePackageReader(limits).read(captured, part -> visitor(part, defaults, overrides, declarations));
+		var inventory = new OfficePackageReader(limits).read(captured, part -> {
+			var manifest = visitor(part, defaults, overrides, declarations);
+			return (reader, event) -> {
+				manifest.visit(reader, event);
+				if (event == javax.xml.stream.XMLStreamConstants.START_ELEMENT) {
+					var attributes = new HashMap<javax.xml.namespace.QName, String>();
+					for (int index = 0; index < reader.getAttributeCount(); index++)
+						attributes.put(reader.getAttributeName(index), reader.getAttributeValue(index));
+					observer.inspect(part, reader.getName(), Map.copyOf(attributes));
+				}
+			};
+		});
 		if (!inventory.parts().containsKey("[Content_Types].xml") || !declarations.containsKey("_rels/.rels"))
 			throw new IOException("Required package declarations are missing");
 		var names = new HashMap<String, String>();

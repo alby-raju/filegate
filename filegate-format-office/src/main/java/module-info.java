@@ -19,6 +19,6 @@
  */
 /** Worker-only OOXML package boundaries; inventory never grants approval. */
 module dev.filegate.formats.office {
-	requires java.xml;
+	requires transitive java.xml;
 	exports dev.filegate.formats.office;
 }
