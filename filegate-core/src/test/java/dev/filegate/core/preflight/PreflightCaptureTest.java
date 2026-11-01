@@ -20,13 +20,7 @@
 
 package dev.filegate.core.preflight;
 
-import java.io.ByteArrayInputStream;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.*;
 
 import dev.filegate.core.FileGate;
 import dev.filegate.core.inspection.Blocked;
@@ -43,24 +37,48 @@ import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.spi.InspectionCheck;
 import dev.filegate.core.testing.TestChecks;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.ByteArrayInputStream;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
 
 class PreflightCaptureTest {
     @TempDir Path temp;
 
     private FileGate gate(InspectionCheck content) throws Exception {
-        var preflight = new PreflightCheck(new PreflightRules(Set.of(FormatCandidate.PNG, FormatCandidate.JPEG),
-                ClaimPolicy.REQUIRE_CONSISTENT));
-        var spec = new PolicySpec("images", Use.DOWNLOAD, 128, ExecutionMode.EMBEDDED,
-                List.of(preflight.descriptor().id(), content.descriptor().id()));
-        var policy = CompiledPolicy.compile(spec, List.of(preflight.descriptor(), content.descriptor()));
-        return FileGate.open(temp, new ResourceLimits(1, 128, 1024), policy, List.of(preflight, content));
+        var preflight =
+                new PreflightCheck(
+                        new PreflightRules(
+                                Set.of(FormatCandidate.PNG, FormatCandidate.JPEG),
+                                ClaimPolicy.REQUIRE_CONSISTENT));
+        var spec =
+                new PolicySpec(
+                        "images",
+                        Use.DOWNLOAD,
+                        128,
+                        ExecutionMode.EMBEDDED,
+                        List.of(preflight.descriptor().id(), content.descriptor().id()));
+        var policy =
+                CompiledPolicy.compile(spec, List.of(preflight.descriptor(), content.descriptor()));
+        return FileGate.open(
+                temp, new ResourceLimits(1, 128, 1024), policy, List.of(preflight, content));
     }
 
-    @Test void unsupportedPrefixRejectsAfterEightBytesWithoutCallingContentInspector() throws Exception {
+    @Test
+    void unsupportedPrefixRejectsAfterEightBytesWithoutCallingContentInspector() throws Exception {
         var source = new ByteArrayInputStream(new byte[100]);
-        try (var gate = gate(TestChecks.check("a.content", input -> { fail("Must not run"); return null; }));
-             var result = gate.inspect(source, InputClaims.NONE)) {
+        try (var gate =
+                        gate(
+                                TestChecks.check(
+                                        "a.content",
+                                        input -> {
+                                            fail("Must not run");
+                                            return null;
+                                        }));
+                var result = gate.inspect(source, InputClaims.NONE)) {
             assertEquals(Verdict.REJECTED, result.report().verdict());
             assertEquals(92, source.available());
             assertEquals("core.preflight", result.report().evidence().getFirst().checkId());
@@ -70,43 +88,80 @@ class PreflightCaptureTest {
         }
     }
 
-    @Test void aSignatureMatchStillRequiresWholeCaptureAndContentEvidence() throws Exception {
+    @Test
+    void aSignatureMatchStillRequiresWholeCaptureAndContentEvidence() throws Exception {
         byte[] bytes = new byte[64];
         System.arraycopy(PreflightFixtures.png(), 0, bytes, 0, 8);
-        try (var gate = gate(TestChecks.check("a.content", input -> {
-            assertEquals(64, input.identity().length());
-            return new CheckEvidence("a.content", CheckStatus.ERROR, ReasonCode.CHECK_ERROR);
-        })); var result = gate.inspect(new ByteArrayInputStream(bytes), InputClaims.NONE)) {
+        try (var gate =
+                        gate(
+                                TestChecks.check(
+                                        "a.content",
+                                        input -> {
+                                            assertEquals(64, input.identity().length());
+                                            return new CheckEvidence(
+                                                    "a.content",
+                                                    CheckStatus.ERROR,
+                                                    ReasonCode.CHECK_ERROR);
+                                        }));
+                var result = gate.inspect(new ByteArrayInputStream(bytes), InputClaims.NONE)) {
             assertEquals(Verdict.INCOMPLETE, result.report().verdict());
             assertInstanceOf(Blocked.class, result);
             assertEquals(CheckStatus.PASS, result.report().evidence().getFirst().status());
         }
     }
 
-    @Test void claimConflictRejectsEarlyAndTruncatedSignatureRejectsAtEof() throws Exception {
-        try (var gate = gate(TestChecks.check("a.content", input -> { fail("Must not run"); return null; }))) {
-            try (var conflict = gate.inspect(new ByteArrayInputStream(PreflightFixtures.png()), new InputClaims("file.pdf", "image/png"))) {
+    @Test
+    void claimConflictRejectsEarlyAndTruncatedSignatureRejectsAtEof() throws Exception {
+        try (var gate =
+                gate(
+                        TestChecks.check(
+                                "a.content",
+                                input -> {
+                                    fail("Must not run");
+                                    return null;
+                                }))) {
+            try (var conflict =
+                    gate.inspect(
+                            new ByteArrayInputStream(PreflightFixtures.png()),
+                            new InputClaims("file.pdf", "image/png"))) {
                 assertEquals(Verdict.REJECTED, conflict.report().verdict());
                 assertTrue(conflict.report().reasons().contains(ReasonCode.CLAIM_MISMATCH));
             }
-            try (var truncated = gate.inspect(new ByteArrayInputStream(new byte[] {(byte) 0x89, 'P', 'N', 'G'}), InputClaims.NONE)) {
+            try (var truncated =
+                    gate.inspect(
+                            new ByteArrayInputStream(new byte[] {(byte) 0x89, 'P', 'N', 'G'}),
+                            InputClaims.NONE)) {
                 assertEquals(Verdict.REJECTED, truncated.report().verdict());
                 assertTrue(truncated.report().reasons().contains(ReasonCode.UNSUPPORTED_FORMAT));
             }
         }
     }
 
-    @Test void shortRecognizableCandidateAndBrokenZeroReadStreamMakeProgress() throws Exception {
-        var source = new ByteArrayInputStream(new byte[] {(byte) 255, (byte) 216, (byte) 255}) {
-            private boolean first = true;
-            @Override public synchronized int read(byte[] bytes, int offset, int length) {
-                if (first) { first = false; return 0; }
-                return super.read(bytes, offset, length);
-            }
-        };
-        try (var gate = gate(TestChecks.check("a.content", input ->
-                new CheckEvidence("a.content", CheckStatus.FAIL, ReasonCode.POLICY_VIOLATION)));
-             var result = gate.inspect(source, InputClaims.NONE)) {
+    @Test
+    void shortRecognizableCandidateAndBrokenZeroReadStreamMakeProgress() throws Exception {
+        var source =
+                new ByteArrayInputStream(new byte[] {(byte) 255, (byte) 216, (byte) 255}) {
+                    private boolean first = true;
+
+                    @Override
+                    public synchronized int read(byte[] bytes, int offset, int length) {
+                        if (first) {
+                            first = false;
+                            return 0;
+                        }
+                        return super.read(bytes, offset, length);
+                    }
+                };
+        try (var gate =
+                        gate(
+                                TestChecks.check(
+                                        "a.content",
+                                        input ->
+                                                new CheckEvidence(
+                                                        "a.content",
+                                                        CheckStatus.FAIL,
+                                                        ReasonCode.POLICY_VIOLATION)));
+                var result = gate.inspect(source, InputClaims.NONE)) {
             assertEquals(CheckStatus.PASS, result.report().evidence().getFirst().status());
             assertEquals(Verdict.REJECTED, result.report().verdict());
         }

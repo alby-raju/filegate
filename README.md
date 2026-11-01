@@ -17,7 +17,7 @@ protect uploads. PDF/DOCX inspection and optional preparation remain planned.
 Requirements: JDK 21 and Maven 3.9 or later.
 
 ```sh
-mvn verify
+mvn clean verify
 ```
 
 Core requires only `java.base`; JUnit is test-only. Separate artifacts contain the
@@ -25,6 +25,8 @@ worker runtime, restricted images and a host publication example. Tests exercise
 policy, capture, resource, worker, image and publication failures. CI builds on
 Linux and macOS with Java 21, and Linux runs actual container restriction tests.
 
+See the [architecture and package map](docs/architecture.md) and
+[contributing guide](CONTRIBUTING.md) for code boundaries and formatting.
 See the [integration guide](docs/integration.md) for API use, ownership, deployment
 limits and host publication obligations.
 

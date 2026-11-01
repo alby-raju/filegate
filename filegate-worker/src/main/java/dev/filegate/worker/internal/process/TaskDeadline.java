@@ -28,7 +28,9 @@ public final class TaskDeadline {
     private final long started = System.nanoTime();
     private final long timeoutNanos;
 
-    public TaskDeadline(Duration timeout) { this.timeoutNanos = timeout.toNanos(); }
+    public TaskDeadline(Duration timeout) {
+        this.timeoutNanos = timeout.toNanos();
+    }
 
     public long remainingNanos() throws TimeoutException {
         long remaining = timeoutNanos - (System.nanoTime() - started);

@@ -20,15 +20,19 @@
 
 package dev.filegate.worker.protocol;
 
+import dev.filegate.core.content.ArtifactIdentity;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import dev.filegate.core.content.ArtifactIdentity;
-
 /** Every response must match all fields, including the exact expected check set. */
-public record ProtocolBinding(UUID requestId, ArtifactIdentity artifact, String policyFingerprint,
-                              String inspectorBuild, List<String> expectedChecks) {
+public record ProtocolBinding(
+        UUID requestId,
+        ArtifactIdentity artifact,
+        String policyFingerprint,
+        String inspectorBuild,
+        List<String> expectedChecks) {
     public ProtocolBinding {
         Objects.requireNonNull(requestId, "requestId");
         Objects.requireNonNull(artifact, "artifact");

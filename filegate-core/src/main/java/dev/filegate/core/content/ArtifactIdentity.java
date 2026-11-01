@@ -28,5 +28,8 @@ public record ArtifactIdentity(long length, String sha256) {
         }
     }
 
-    @Override public String toString() { return "ArtifactIdentity[length=" + length + "]"; }
+    @Override
+    public String toString() {
+        return "ArtifactIdentity[length=" + length + "]";
+    }
 }

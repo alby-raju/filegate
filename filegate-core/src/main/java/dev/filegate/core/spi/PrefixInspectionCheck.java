@@ -28,6 +28,7 @@ public interface PrefixInspectionCheck extends InspectionCheck {
     int MAX_PREFIX_BYTES = 4096;
 
     int prefixBytes();
+
     CheckEvidence inspectPrefix(byte[] prefix, InputClaims claims) throws Exception;
 
     @Override

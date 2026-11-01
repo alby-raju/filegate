@@ -22,5 +22,6 @@ package dev.filegate.core.policy;
 
 /** Preflight recognition is never sufficient for content approval. */
 public enum CheckKind {
-    PREFLIGHT, CONTENT
+    PREFLIGHT,
+    CONTENT
 }

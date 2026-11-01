@@ -20,17 +20,20 @@
 
 package dev.filegate.core.content;
 
-import java.io.OutputStream;
-
 import dev.filegate.core.internal.content.VerifiedContent;
 import dev.filegate.core.policy.Use;
+
+import java.io.OutputStream;
 
 /** Scoped capability for approved bytes; no raw stage path or constructor is public. */
 public sealed interface ApprovedContent permits VerifiedContent {
     ArtifactIdentity identity();
+
     Use use();
+
     String policyFingerprint();
 
     /** Copies to a private pending destination; the caller owns destination finalization and abort. */
-    TransferReceipt copyTo(OutputStream output, String pendingDestinationId, Use destinationUse) throws TransferException;
+    TransferReceipt copyTo(OutputStream output, String pendingDestinationId, Use destinationUse)
+            throws TransferException;
 }

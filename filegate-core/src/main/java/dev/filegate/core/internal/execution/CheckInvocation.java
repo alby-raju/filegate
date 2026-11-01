@@ -20,11 +20,11 @@
 
 package dev.filegate.core.internal.execution;
 
-import java.util.concurrent.Callable;
-
 import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.inspection.CheckStatus;
 import dev.filegate.core.inspection.ReasonCode;
+
+import java.util.concurrent.Callable;
 
 /** One failure translation boundary for capture-time and full-content checks. */
 public final class CheckInvocation {
@@ -35,7 +35,8 @@ public final class CheckInvocation {
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
             CheckEvidence evidence = operation.call();
             if (evidence == null || !expectedId.equals(evidence.checkId())) {
-                return new CheckEvidence(expectedId, CheckStatus.ERROR, ReasonCode.INVALID_EVIDENCE);
+                return new CheckEvidence(
+                        expectedId, CheckStatus.ERROR, ReasonCode.INVALID_EVIDENCE);
             }
             return evidence;
         } catch (InterruptedException cancelled) {

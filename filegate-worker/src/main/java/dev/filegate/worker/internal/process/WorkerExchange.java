@@ -20,6 +20,13 @@
 
 package dev.filegate.worker.internal.process;
 
+import dev.filegate.worker.process.WorkerFailure;
+import dev.filegate.worker.process.WorkerLimits;
+import dev.filegate.worker.process.WorkerRun;
+import dev.filegate.worker.protocol.ProtocolBinding;
+import dev.filegate.worker.protocol.WorkerProtocol;
+import dev.filegate.worker.protocol.WorkerResponse;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,13 +41,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import dev.filegate.worker.process.WorkerFailure;
-import dev.filegate.worker.process.WorkerLimits;
-import dev.filegate.worker.process.WorkerRun;
-import dev.filegate.worker.protocol.ProtocolBinding;
-import dev.filegate.worker.protocol.WorkerProtocol;
-import dev.filegate.worker.protocol.WorkerResponse;
-
 /** Owns the three bounded stream tasks for exactly one worker process. */
 public final class WorkerExchange implements AutoCloseable {
     private final Process process;
@@ -51,31 +51,43 @@ public final class WorkerExchange implements AutoCloseable {
     private final Future<?> stderr;
     private final Future<WorkerResponse> reader;
 
-    public WorkerExchange(ThreadPoolExecutor executor, Process process, ProtocolBinding binding,
-                          InputStream payload, WorkerLimits limits) {
+    public WorkerExchange(
+            ThreadPoolExecutor executor,
+            Process process,
+            ProtocolBinding binding,
+            InputStream payload,
+            WorkerLimits limits) {
         this.process = process;
         this.exitObservation = limits.terminationGrace();
         try {
-            writer = executor.submit(() -> {
-                try (var output = process.getOutputStream()) {
-                    WorkerProtocol.writeRequest(output, binding);
-                    if (payload != null) writePayload(payload, output, binding.artifact().length());
-                }
-                return null;
-            });
+            writer =
+                    executor.submit(
+                            () -> {
+                                try (var output = process.getOutputStream()) {
+                                    WorkerProtocol.writeRequest(output, binding);
+                                    if (payload != null)
+                                        writePayload(payload, output, binding.artifact().length());
+                                }
+                                return null;
+                            });
             tasks.add(writer);
-            stderr = executor.submit(() -> {
-                drainDiagnostics(limits.maxStderrBytes());
-                return null;
-            });
+            stderr =
+                    executor.submit(
+                            () -> {
+                                drainDiagnostics(limits.maxStderrBytes());
+                                return null;
+                            });
             tasks.add(stderr);
-            reader = executor.submit(() -> {
-                try (var input = process.getInputStream()) {
-                    var response = WorkerProtocol.readResponse(input, binding);
-                    if (input.read() != -1) throw new IOException("Trailing worker output");
-                    return response;
-                }
-            });
+            reader =
+                    executor.submit(
+                            () -> {
+                                try (var input = process.getInputStream()) {
+                                    var response = WorkerProtocol.readResponse(input, binding);
+                                    if (input.read() != -1)
+                                        throw new IOException("Trailing worker output");
+                                    return response;
+                                }
+                            });
             tasks.add(reader);
         } catch (RuntimeException rejected) {
             close();
@@ -88,13 +100,17 @@ public final class WorkerExchange implements AutoCloseable {
             WorkerResponse response = reader.get(deadline.remainingNanos(), TimeUnit.NANOSECONDS);
             writer.get(deadline.remainingNanos(), TimeUnit.NANOSECONDS);
             stderr.get(deadline.remainingNanos(), TimeUnit.NANOSECONDS);
-            if (!process.waitFor(deadline.remainingNanos(), TimeUnit.NANOSECONDS)) throw new TimeoutException();
-            return process.exitValue() == 0 ? new WorkerRun.Completed(response) : new WorkerRun.Failed(WorkerFailure.CRASH);
+            if (!process.waitFor(deadline.remainingNanos(), TimeUnit.NANOSECONDS))
+                throw new TimeoutException();
+            return process.exitValue() == 0
+                    ? new WorkerRun.Completed(response)
+                    : new WorkerRun.Failed(WorkerFailure.CRASH);
         } catch (ExecutionException invalid) {
             if (stderrExceeded.get()) return new WorkerRun.Failed(WorkerFailure.STDERR_LIMIT);
             if (invalid.getCause() instanceof EOFException) {
                 long wait = Math.min(deadline.remainingNanos(), exitObservation.toNanos());
-                // EOF can precede Process exit notification. Observe natural exit before our cleanup kill.
+                // EOF can precede Process exit notification. Observe natural exit before our
+                // cleanup kill.
                 if (process.waitFor(wait, TimeUnit.NANOSECONDS) && process.exitValue() != 0) {
                     return new WorkerRun.Failed(WorkerFailure.CRASH);
                 }
@@ -107,7 +123,7 @@ public final class WorkerExchange implements AutoCloseable {
         try (var errors = process.getErrorStream()) {
             byte[] buffer = new byte[1024];
             int remaining = allowance;
-            for (int read; (read = errors.read(buffer)) != -1;) {
+            for (int read; (read = errors.read(buffer)) != -1; ) {
                 if (read > remaining) {
                     stderrExceeded.set(true);
                     process.destroyForcibly();
@@ -118,10 +134,11 @@ public final class WorkerExchange implements AutoCloseable {
         }
     }
 
-    private static void writePayload(InputStream source, OutputStream destination, long expected) throws IOException {
+    private static void writePayload(InputStream source, OutputStream destination, long expected)
+            throws IOException {
         byte[] buffer = new byte[8192];
         long count = 0;
-        for (int read; (read = source.read(buffer)) != -1;) {
+        for (int read; (read = source.read(buffer)) != -1; ) {
             if (read > expected - count) throw new IOException("Payload length mismatch");
             count += read;
             destination.write(buffer, 0, read);
@@ -129,5 +146,8 @@ public final class WorkerExchange implements AutoCloseable {
         if (count != expected) throw new IOException("Payload length mismatch");
     }
 
-    @Override public void close() { tasks.forEach(task -> task.cancel(true)); }
+    @Override
+    public void close() {
+        tasks.forEach(task -> task.cancel(true));
+    }
 }

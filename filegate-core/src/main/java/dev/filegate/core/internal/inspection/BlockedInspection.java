@@ -27,7 +27,15 @@ import dev.filegate.core.inspection.InspectionReport;
 public final class BlockedInspection implements Blocked {
     private final InspectionReport report;
 
-    public BlockedInspection(InspectionReport report) { this.report = report; }
-    @Override public InspectionReport report() { return report; }
-    @Override public void close() {}
+    public BlockedInspection(InspectionReport report) {
+        this.report = report;
+    }
+
+    @Override
+    public InspectionReport report() {
+        return report;
+    }
+
+    @Override
+    public void close() {}
 }

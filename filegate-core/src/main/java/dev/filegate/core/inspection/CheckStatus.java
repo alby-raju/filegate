@@ -21,5 +21,8 @@
 package dev.filegate.core.inspection;
 
 public enum CheckStatus {
-    PASS, FAIL, ERROR, NOT_RUN
+    PASS,
+    FAIL,
+    ERROR,
+    NOT_RUN
 }

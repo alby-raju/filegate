@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 
 public final class Sha256 {
     private Sha256() {}
+
     public static MessageDigest newDigest() {
         try {
             return MessageDigest.getInstance("SHA-256");

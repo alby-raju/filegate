@@ -24,9 +24,13 @@ import dev.filegate.formats.images.ImageProfile;
 
 /** Geometry checks shared by the restricted profiles and the selected decoder. */
 public record ImageDimensions(int width, int height) {
-    public static ImageDimensions checked(ImageProfile profile, int width, int height) throws ProfileViolation {
-        if (width <= 0 || height <= 0 || (long) width * height > profile.maxPixels()
-                || (long) width * height > profile.maxDecodedBytes() / 4) throw new ProfileViolation();
+    public static ImageDimensions checked(ImageProfile profile, int width, int height)
+            throws ProfileViolation {
+        if (width <= 0
+                || height <= 0
+                || (long) width * height > profile.maxPixels()
+                || (long) width * height > profile.maxDecodedBytes() / 4)
+            throw new ProfileViolation();
         return new ImageDimensions(width, height);
     }
 }

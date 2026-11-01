@@ -21,6 +21,7 @@
 /** Bounded worker transport and explicitly configured platform runtimes. */
 module dev.filegate.worker {
     requires transitive dev.filegate.core;
+
     exports dev.filegate.worker.protocol;
     exports dev.filegate.worker.process;
     exports dev.filegate.worker.linux;

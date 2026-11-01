@@ -22,5 +22,8 @@ package dev.filegate.core.preflight;
 
 final class PreflightFixtures {
     private PreflightFixtures() {}
-    static byte[] png() { return new byte[] {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10}; }
+
+    static byte[] png() {
+        return new byte[] {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10};
+    }
 }

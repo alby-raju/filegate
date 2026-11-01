@@ -20,17 +20,18 @@
 
 package dev.filegate.worker.protocol;
 
+import dev.filegate.core.inspection.CheckEvidence;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
-import dev.filegate.core.inspection.CheckEvidence;
-
 public record WorkerResponse(ProtocolBinding binding, List<CheckEvidence> evidence) {
     public WorkerResponse {
         Objects.requireNonNull(binding, "binding");
-        if (evidence.size() > WorkerProtocol.MAX_CHECKS) throw new IllegalArgumentException("Too many findings");
+        if (evidence.size() > WorkerProtocol.MAX_CHECKS)
+            throw new IllegalArgumentException("Too many findings");
         evidence = List.copyOf(evidence);
     }
 
@@ -40,7 +41,8 @@ public record WorkerResponse(ProtocolBinding binding, List<CheckEvidence> eviden
         }
         var found = new HashSet<String>();
         for (CheckEvidence result : evidence) {
-            if (!expected.expectedChecks().contains(result.checkId()) || !found.add(result.checkId())) {
+            if (!expected.expectedChecks().contains(result.checkId())
+                    || !found.add(result.checkId())) {
                 throw new IOException("Unexpected or duplicate worker evidence");
             }
         }

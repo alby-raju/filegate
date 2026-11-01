@@ -20,27 +20,32 @@
 
 package dev.filegate.core.internal.capture;
 
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.inspection.ReasonCode;
+import dev.filegate.core.internal.crypto.Sha256;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HexFormat;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.inspection.ReasonCode;
-import dev.filegate.core.internal.crypto.Sha256;
-
 /** Counts and hashes actual bytes with fixed buffers; owns neither stream. */
 final class CaptureReader {
     private final int bufferBytes;
 
-    CaptureReader(int bufferBytes) { this.bufferBytes = bufferBytes; }
+    CaptureReader(int bufferBytes) {
+        this.bufferBytes = bufferBytes;
+    }
 
-    ArtifactIdentity copy(InputStream source, OutputStream destination, long limit, CapturePrefix prefix) throws IOException {
+    ArtifactIdentity copy(
+            InputStream source, OutputStream destination, long limit, CapturePrefix prefix)
+            throws IOException {
         var digest = Sha256.newDigest();
         byte[] buffer = new byte[bufferBytes];
         long count = 0;
         while (true) {
-            if (Thread.currentThread().isInterrupted()) throw new CaptureFailure(ReasonCode.CANCELLED);
+            if (Thread.currentThread().isInterrupted())
+                throw new CaptureFailure(ReasonCode.CANCELLED);
             long remaining = limit - count;
             int wanted = (int) (remaining >= buffer.length ? buffer.length : remaining + 1);
             wanted = Math.min(wanted, prefix.readLimit());
@@ -57,7 +62,8 @@ final class CaptureReader {
         }
     }
 
-    private static int readWithProgress(InputStream source, byte[] buffer, int wanted) throws IOException {
+    private static int readWithProgress(InputStream source, byte[] buffer, int wanted)
+            throws IOException {
         int read = source.read(buffer, 0, wanted);
         if (read != 0) return read;
         int next = source.read();

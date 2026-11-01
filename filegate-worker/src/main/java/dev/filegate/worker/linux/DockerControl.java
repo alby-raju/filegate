@@ -29,18 +29,23 @@ import java.util.concurrent.TimeUnit;
 final class DockerControl {
     private final Duration timeout;
 
-    DockerControl(Duration timeout) { this.timeout = timeout; }
+    DockerControl(Duration timeout) {
+        this.timeout = timeout;
+    }
 
     boolean succeeds(List<String> command) {
         Process process = null;
         boolean interrupted = Thread.interrupted();
         try {
-            var builder = new ProcessBuilder(command).redirectOutput(ProcessBuilder.Redirect.DISCARD)
-                    .redirectError(ProcessBuilder.Redirect.DISCARD);
+            var builder =
+                    new ProcessBuilder(command)
+                            .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                            .redirectError(ProcessBuilder.Redirect.DISCARD);
             builder.environment().clear();
             process = builder.start();
             process.getOutputStream().close();
-            return process.waitFor(timeout.toNanos(), TimeUnit.NANOSECONDS) && process.exitValue() == 0;
+            return process.waitFor(timeout.toNanos(), TimeUnit.NANOSECONDS)
+                    && process.exitValue() == 0;
         } catch (IOException unavailable) {
             return false;
         } catch (InterruptedException cancelled) {
@@ -49,8 +54,11 @@ final class DockerControl {
         } finally {
             if (process != null && process.isAlive()) {
                 process.destroyForcibly();
-                try { process.waitFor(2, TimeUnit.SECONDS); }
-                catch (InterruptedException cancelled) { interrupted = true; }
+                try {
+                    process.waitFor(2, TimeUnit.SECONDS);
+                } catch (InterruptedException cancelled) {
+                    interrupted = true;
+                }
             }
             if (interrupted) Thread.currentThread().interrupt();
         }

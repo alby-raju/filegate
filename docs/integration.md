@@ -42,7 +42,18 @@ try (Inspection inspection = gate.inspect(uploadStream, new InputClaims(filename
 }
 ```
 
-The snippet uses `dev.filegate.core` and the POSIX adapter in `filegate-examples`.
+The snippet uses the imports below and the POSIX adapter in `filegate-examples`:
+
+```java
+import dev.filegate.core.FileGate;
+import dev.filegate.core.inspection.Approved;
+import dev.filegate.core.inspection.InputClaims;
+import dev.filegate.core.inspection.Inspection;
+import dev.filegate.core.content.TransferReceipt;
+import dev.filegate.core.policy.Use;
+import dev.filegate.examples.LocalPendingObject;
+import java.nio.file.Path;
+```
 [PublicationTest](../filegate-examples/src/test/java/dev/filegate/examples/PublicationTest.java)
 executes this workflow under an explicitly named test-only coverage profile.
 
@@ -118,3 +129,10 @@ candidates describe PNG/JPEG/PDF/ZIP only; ZIP does not identify DOCX or XLSX, a
 no check establishes polyglot absence. A preflight-only policy cannot compile.
 Claim rules are fingerprint-bound; required filenames/MIME types must be
 consistent when selected. Format support still requires a real content profile.
+
+For check implementations, use `dev.filegate.core.spi.InspectionCheck` and
+`InspectionInput`. A bounded initial-prefix check can implement
+`PrefixInspectionCheck`; declare its byte requirement and return evidence for its
+registered check ID. The registry validates bounds at startup. The engine runs
+these checks during capture through the same exception/cancellation boundary used
+for full checks. See the [package map](architecture.md) for all public imports.

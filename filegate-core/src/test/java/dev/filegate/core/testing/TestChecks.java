@@ -41,8 +41,15 @@ public final class TestChecks {
 
     public static InspectionCheck check(String id, Body body) {
         return new InspectionCheck() {
-            @Override public CheckDescriptor descriptor() { return TestChecks.descriptor(id); }
-            @Override public CheckEvidence inspect(InspectionInput input) throws Exception { return body.inspect(input); }
+            @Override
+            public CheckDescriptor descriptor() {
+                return TestChecks.descriptor(id);
+            }
+
+            @Override
+            public CheckEvidence inspect(InspectionInput input) throws Exception {
+                return body.inspect(input);
+            }
         };
     }
 }

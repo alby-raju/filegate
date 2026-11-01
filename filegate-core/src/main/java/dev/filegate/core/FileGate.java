@@ -20,13 +20,6 @@
 
 package dev.filegate.core;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-
 import dev.filegate.core.inspection.InputClaims;
 import dev.filegate.core.inspection.Inspection;
 import dev.filegate.core.internal.capture.StageStore;
@@ -37,6 +30,13 @@ import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.resource.ResourceUsage;
 import dev.filegate.core.spi.InspectionCheck;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+
 /** One long-lived gate per resource domain. Assembly and lifecycle stay at this boundary. */
 public final class FileGate implements AutoCloseable {
     private final CheckRegistry registry;
@@ -44,24 +44,36 @@ public final class FileGate implements AutoCloseable {
     private final InspectionEngine engine;
     private final AtomicReference<CheckRegistry.Plan> plan;
 
-    private FileGate(CheckRegistry registry, ResourceLimits limits, InspectionEngine engine, CheckRegistry.Plan plan) {
+    private FileGate(
+            CheckRegistry registry,
+            ResourceLimits limits,
+            InspectionEngine engine,
+            CheckRegistry.Plan plan) {
         this.registry = registry;
         this.limits = limits;
         this.engine = engine;
         this.plan = new AtomicReference<>(plan);
     }
 
-    public static FileGate open(Path stagingParent, ResourceLimits limits, CompiledPolicy policy,
-                                List<InspectionCheck> installed) throws IOException {
+    public static FileGate open(
+            Path stagingParent,
+            ResourceLimits limits,
+            CompiledPolicy policy,
+            List<InspectionCheck> installed)
+            throws IOException {
         Objects.requireNonNull(limits, "limits");
         var registry = new CheckRegistry(installed);
         var plan = registry.bind(policy, limits);
-        var engine = new InspectionEngine(new StageStore(stagingParent, limits), limits.captureBufferBytes());
+        var engine =
+                new InspectionEngine(
+                        new StageStore(stagingParent, limits), limits.captureBufferBytes());
         return new FileGate(registry, limits, engine, plan);
     }
 
     /** Existing operations retain their resolved plan and policy snapshot. */
-    public void reload(CompiledPolicy next) { plan.set(registry.bind(next, limits)); }
+    public void reload(CompiledPolicy next) {
+        plan.set(registry.bind(next, limits));
+    }
 
     public Inspection inspect(InputStream source, InputClaims claims) {
         Objects.requireNonNull(source, "source");
@@ -76,9 +88,17 @@ public final class FileGate implements AutoCloseable {
         return engine.inspect(plan.get(), source, claims);
     }
 
-    public ResourceUsage resourceUsage() { return engine.resourceUsage(); }
-    public void retryCleanup() { engine.retryCleanup(); }
+    public ResourceUsage resourceUsage() {
+        return engine.resourceUsage();
+    }
+
+    public void retryCleanup() {
+        engine.retryCleanup();
+    }
 
     /** Stops new capture. Existing results remain caller-owned. */
-    @Override public void close() { engine.close(); }
+    @Override
+    public void close() {
+        engine.close();
+    }
 }

@@ -25,7 +25,10 @@ public record InputClaims(String filename, String mediaType) {
     public static final InputClaims NONE = new InputClaims("", "");
 
     public InputClaims {
-        if (filename == null || mediaType == null || filename.length() > 256 || mediaType.length() > 128
+        if (filename == null
+                || mediaType == null
+                || filename.length() > 256
+                || mediaType.length() > 128
                 || filename.chars().anyMatch(Character::isISOControl)
                 || mediaType.chars().anyMatch(Character::isISOControl)) {
             throw new IllegalArgumentException("Invalid or unbounded input claims");

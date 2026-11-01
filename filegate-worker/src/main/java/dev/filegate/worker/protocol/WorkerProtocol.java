@@ -20,6 +20,11 @@
 
 package dev.filegate.worker.protocol;
 
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.inspection.CheckStatus;
+import dev.filegate.core.inspection.ReasonCode;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -31,11 +36,6 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.UUID;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.inspection.CheckEvidence;
-import dev.filegate.core.inspection.CheckStatus;
-import dev.filegate.core.inspection.ReasonCode;
-
 /** Versioned bounded binary frames. Never accepts Java object serialization or free-form diagnostics. */
 public final class WorkerProtocol {
     public static final int MAX_CHECKS = 64;
@@ -43,9 +43,11 @@ public final class WorkerProtocol {
     private static final int MAGIC_V1 = 0x46470101;
     private static final int REQUEST = 1;
     private static final int RESPONSE = 2;
+
     private WorkerProtocol() {}
 
-    public static void writeRequest(OutputStream output, ProtocolBinding binding) throws IOException {
+    public static void writeRequest(OutputStream output, ProtocolBinding binding)
+            throws IOException {
         var bytes = new ByteArrayOutputStream();
         var data = new DataOutputStream(bytes);
         header(data, REQUEST);
@@ -64,7 +66,8 @@ public final class WorkerProtocol {
         }
     }
 
-    public static void writeResponse(OutputStream output, WorkerResponse response) throws IOException {
+    public static void writeResponse(OutputStream output, WorkerResponse response)
+            throws IOException {
         var bytes = new ByteArrayOutputStream();
         var data = new DataOutputStream(bytes);
         header(data, RESPONSE);
@@ -78,7 +81,8 @@ public final class WorkerProtocol {
         writeFrame(output, bytes.toByteArray());
     }
 
-    public static WorkerResponse readResponse(InputStream input, ProtocolBinding expected) throws IOException {
+    public static WorkerResponse readResponse(InputStream input, ProtocolBinding expected)
+            throws IOException {
         var data = readFrame(input, RESPONSE);
         try {
             var binding = readBinding(data);
@@ -87,8 +91,13 @@ public final class WorkerProtocol {
             for (int i = 0; i < count; i++) {
                 String id = data.readUTF();
                 int status = data.readUnsignedByte();
-                if (status >= CheckStatus.values().length) throw new IOException("Unknown check status");
-                evidence.add(new CheckEvidence(id, CheckStatus.values()[status], ReasonCode.valueOf(data.readUTF())));
+                if (status >= CheckStatus.values().length)
+                    throw new IOException("Unknown check status");
+                evidence.add(
+                        new CheckEvidence(
+                                id,
+                                CheckStatus.values()[status],
+                                ReasonCode.valueOf(data.readUTF())));
             }
             requireEnd(data);
             var response = new WorkerResponse(binding, evidence);
@@ -104,7 +113,8 @@ public final class WorkerProtocol {
         output.writeByte(kind);
     }
 
-    private static void writeBinding(DataOutputStream output, ProtocolBinding binding) throws IOException {
+    private static void writeBinding(DataOutputStream output, ProtocolBinding binding)
+            throws IOException {
         output.writeLong(binding.requestId().getMostSignificantBits());
         output.writeLong(binding.requestId().getLeastSignificantBits());
         output.writeLong(binding.artifact().length());
@@ -126,12 +136,17 @@ public final class WorkerProtocol {
         int count = boundedCount(input.readInt());
         var checks = new ArrayList<String>(count);
         for (int i = 0; i < count; i++) checks.add(input.readUTF());
-        return new ProtocolBinding(id, new ArtifactIdentity(length, HexFormat.of().formatHex(digest)),
-                HexFormat.of().formatHex(policy), build, checks);
+        return new ProtocolBinding(
+                id,
+                new ArtifactIdentity(length, HexFormat.of().formatHex(digest)),
+                HexFormat.of().formatHex(policy),
+                build,
+                checks);
     }
 
     private static int boundedCount(int count) throws IOException {
-        if (count < 0 || count > WorkerProtocol.MAX_CHECKS) throw new IOException("Invalid check count");
+        if (count < 0 || count > WorkerProtocol.MAX_CHECKS)
+            throw new IOException("Invalid check count");
         return count;
     }
 
@@ -143,7 +158,8 @@ public final class WorkerProtocol {
         data.flush();
     }
 
-    private static DataInputStream readFrame(InputStream input, int expectedKind) throws IOException {
+    private static DataInputStream readFrame(InputStream input, int expectedKind)
+            throws IOException {
         var source = new DataInputStream(input);
         int length = source.readInt();
         if (length < 5 || length > MAX_FRAME_BYTES) throw new IOException("Frame limit exceeded");

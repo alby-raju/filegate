@@ -20,19 +20,20 @@
 
 package dev.filegate.core.internal.capture;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.inspection.CheckStatus;
 import dev.filegate.core.inspection.InputClaims;
 import dev.filegate.core.internal.execution.CheckInvocation;
 import dev.filegate.core.spi.PrefixInspectionCheck;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /** Per-capture state; independent of any concrete format or claim checker. */
 final class CapturePrefix {
     private record RequiredPrefix(String id, int bytes, PrefixInspectionCheck check) {}
+
     private final List<RequiredPrefix> required;
     private final List<CheckEvidence> evidence = new ArrayList<>();
     private final InputClaims claims;
@@ -41,9 +42,21 @@ final class CapturePrefix {
     private int completed;
 
     CapturePrefix(List<PrefixInspectionCheck> checks, InputClaims claims) {
-        this.required = checks.stream().map(check ->
-                new RequiredPrefix(check.descriptor().id(), check.prefixBytes(), check)).toList();
-        if (required.stream().anyMatch(check -> check.bytes() < 1 || check.bytes() > PrefixInspectionCheck.MAX_PREFIX_BYTES)) {
+        this.required =
+                checks.stream()
+                        .map(
+                                check ->
+                                        new RequiredPrefix(
+                                                check.descriptor().id(),
+                                                check.prefixBytes(),
+                                                check))
+                        .toList();
+        if (required.stream()
+                .anyMatch(
+                        check ->
+                                check.bytes() < 1
+                                        || check.bytes()
+                                                > PrefixInspectionCheck.MAX_PREFIX_BYTES)) {
             throw new IllegalArgumentException("Invalid prefix length");
         }
         int capacity = required.stream().mapToInt(RequiredPrefix::bytes).max().orElse(0);
@@ -52,7 +65,9 @@ final class CapturePrefix {
     }
 
     int readLimit() {
-        return completed == required.size() ? Integer.MAX_VALUE : required.get(completed).bytes() - length;
+        return completed == required.size()
+                ? Integer.MAX_VALUE
+                : required.get(completed).bytes() - length;
     }
 
     void accept(byte[] bytes, int count) throws CaptureFailure {
@@ -62,15 +77,22 @@ final class CapturePrefix {
         inspectReady(false);
     }
 
-    void finish() throws CaptureFailure { inspectReady(true); }
-    List<CheckEvidence> evidence() { return List.copyOf(evidence); }
+    void finish() throws CaptureFailure {
+        inspectReady(true);
+    }
+
+    List<CheckEvidence> evidence() {
+        return List.copyOf(evidence);
+    }
 
     private void inspectReady(boolean atEnd) throws CaptureFailure {
         while (completed < required.size()) {
             RequiredPrefix next = required.get(completed);
             if (!atEnd && length < next.bytes()) return;
             byte[] bounded = Arrays.copyOf(prefix, Math.min(length, next.bytes()));
-            CheckEvidence result = CheckInvocation.invoke(next.id(), () -> next.check().inspectPrefix(bounded, claims));
+            CheckEvidence result =
+                    CheckInvocation.invoke(
+                            next.id(), () -> next.check().inspectPrefix(bounded, claims));
             evidence.add(result);
             completed++;
             if (result.status() != CheckStatus.PASS) throw new CaptureFailure(result.reason());

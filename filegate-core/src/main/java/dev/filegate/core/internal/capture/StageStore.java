@@ -20,14 +20,6 @@
 
 package dev.filegate.core.internal.capture;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import dev.filegate.core.content.ArtifactIdentity;
 import dev.filegate.core.inspection.InputClaims;
 import dev.filegate.core.inspection.ReasonCode;
@@ -36,8 +28,20 @@ import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.resource.ResourceUsage;
 import dev.filegate.core.spi.PrefixInspectionCheck;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 public final class StageStore implements AutoCloseable {
-    @FunctionalInterface interface Deleter { void delete(Path path) throws IOException; }
+    @FunctionalInterface
+    interface Deleter {
+        void delete(Path path) throws IOException;
+    }
+
     private final Path root;
     private final CaptureReader reader;
     private final ResourceLedger ledger;
@@ -55,30 +59,43 @@ public final class StageStore implements AutoCloseable {
         this.ledger = new ResourceLedger(limits);
         this.deleter = deleter;
         // Unsupported permissions fail construction; there is no world-readable fallback.
-        this.root = Files.createTempDirectory(parent, "filegate-",
-                PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
+        this.root =
+                Files.createTempDirectory(
+                        parent,
+                        "filegate-",
+                        PosixFilePermissions.asFileAttribute(
+                                PosixFilePermissions.fromString("rwx------")));
     }
 
     public CaptureResult capture(InputStream source, long maxBytes) {
         return capture(source, maxBytes, InputClaims.NONE, java.util.List.of());
     }
 
-    public CaptureResult capture(InputStream source, long maxBytes, InputClaims claims,
-                                 java.util.List<PrefixInspectionCheck> prefixChecks) {
+    public CaptureResult capture(
+            InputStream source,
+            long maxBytes,
+            InputClaims claims,
+            java.util.List<PrefixInspectionCheck> prefixChecks) {
         var prefix = new CapturePrefix(prefixChecks, claims);
         ResourceLedger.Reservation reservation;
         synchronized (this) {
             if (closed) throw new IllegalStateException("Gate is closed");
             var admitted = ledger.reserve(maxBytes);
-            if (admitted.isEmpty()) return new CaptureResult.Denied(ReasonCode.CAPACITY_EXHAUSTED, java.util.List.of());
+            if (admitted.isEmpty())
+                return new CaptureResult.Denied(ReasonCode.CAPACITY_EXHAUSTED, java.util.List.of());
             reservation = admitted.get();
             captures++;
         }
         Path path = null;
         CapturedArtifact artifact = null;
         try {
-            path = Files.createTempFile(root, "artifact-", ".stage",
-                    PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")));
+            path =
+                    Files.createTempFile(
+                            root,
+                            "artifact-",
+                            ".stage",
+                            PosixFilePermissions.asFileAttribute(
+                                    PosixFilePermissions.fromString("rw-------")));
             ArtifactIdentity identity;
             try (var output = Files.newOutputStream(path)) {
                 identity = reader.copy(source, output, maxBytes, prefix);
@@ -93,7 +110,9 @@ public final class StageStore implements AutoCloseable {
             return new CaptureResult.Denied(ReasonCode.CAPTURE_FAILED, prefix.evidence());
         } finally {
             if (artifact == null) discard(path, reservation);
-            synchronized (this) { captures--; }
+            synchronized (this) {
+                captures--;
+            }
             removeDeletedAndMaybeRoot();
         }
     }
@@ -125,7 +144,8 @@ public final class StageStore implements AutoCloseable {
     }
 
     public ResourceUsage usage() {
-        return ledger.usage((int) artifacts.stream().filter(CapturedArtifact::pendingDeletion).count());
+        return ledger.usage(
+                (int) artifacts.stream().filter(CapturedArtifact::pendingDeletion).count());
     }
 
     void reclaimed(CapturedArtifact artifact) {
@@ -142,8 +162,11 @@ public final class StageStore implements AutoCloseable {
         }
     }
 
-    @Override public void close() {
-        synchronized (this) { closed = true; }
+    @Override
+    public void close() {
+        synchronized (this) {
+            closed = true;
+        }
         retryCleanup();
     }
 }

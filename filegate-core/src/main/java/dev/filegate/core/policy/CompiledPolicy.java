@@ -62,17 +62,36 @@ public final class CompiledPolicy {
             resolved.add(descriptor);
         }
         if (resolved.stream().noneMatch(check -> check.kind() == CheckKind.CONTENT)) {
-            throw new IllegalArgumentException("Preflight cannot replace mandatory content inspection");
+            throw new IllegalArgumentException(
+                    "Preflight cannot replace mandatory content inspection");
         }
-        resolved.sort(java.util.Comparator.comparing(CheckDescriptor::kind).thenComparing(CheckDescriptor::id));
+        resolved.sort(
+                java.util.Comparator.comparing(CheckDescriptor::kind)
+                        .thenComparing(CheckDescriptor::id));
         return new CompiledPolicy(spec, resolved);
     }
 
-    public String name() { return spec.name(); }
-    public Use use() { return spec.use(); }
-    public long maxInputBytes() { return spec.maxInputBytes(); }
-    public ExecutionMode executionMode() { return spec.executionMode(); }
-    public List<CheckDescriptor> checks() { return checks; }
-    public String fingerprint() { return fingerprint; }
+    public String name() {
+        return spec.name();
+    }
 
+    public Use use() {
+        return spec.use();
+    }
+
+    public long maxInputBytes() {
+        return spec.maxInputBytes();
+    }
+
+    public ExecutionMode executionMode() {
+        return spec.executionMode();
+    }
+
+    public List<CheckDescriptor> checks() {
+        return checks;
+    }
+
+    public String fingerprint() {
+        return fingerprint;
+    }
 }

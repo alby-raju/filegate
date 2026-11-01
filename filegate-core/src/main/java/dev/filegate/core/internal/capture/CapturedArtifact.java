@@ -20,13 +20,13 @@
 
 package dev.filegate.core.internal.capture;
 
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.internal.resource.ResourceLedger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.internal.resource.ResourceLedger;
 
 /** Package-private stage ownership. Paths never cross the public API. */
 public final class CapturedArtifact implements AutoCloseable {
@@ -38,15 +38,20 @@ public final class CapturedArtifact implements AutoCloseable {
     private boolean ownerClosed;
     private boolean deleted;
 
-    CapturedArtifact(Path path, ArtifactIdentity identity, StageStore store,
-                     ResourceLedger.Reservation reservation) {
+    CapturedArtifact(
+            Path path,
+            ArtifactIdentity identity,
+            StageStore store,
+            ResourceLedger.Reservation reservation) {
         this.path = path;
         this.identity = identity;
         this.store = store;
         this.reservation = reservation;
     }
 
-    public ArtifactIdentity identity() { return identity; }
+    public ArtifactIdentity identity() {
+        return identity;
+    }
 
     public synchronized Lease retain() {
         if (ownerClosed) {
@@ -56,7 +61,8 @@ public final class CapturedArtifact implements AutoCloseable {
         return new Lease();
     }
 
-    @Override public synchronized void close() {
+    @Override
+    public synchronized void close() {
         ownerClosed = true;
         tryDelete();
     }
@@ -70,7 +76,9 @@ public final class CapturedArtifact implements AutoCloseable {
         return deleted;
     }
 
-    synchronized boolean pendingDeletion() { return ownerClosed && readers == 0 && !deleted; }
+    synchronized boolean pendingDeletion() {
+        return ownerClosed && readers == 0 && !deleted;
+    }
 
     public final class Lease implements AutoCloseable {
         private boolean closed;
@@ -82,7 +90,8 @@ public final class CapturedArtifact implements AutoCloseable {
             return Files.newInputStream(path);
         }
 
-        @Override public void close() {
+        @Override
+        public void close() {
             synchronized (CapturedArtifact.this) {
                 synchronized (this) {
                     if (closed) return;

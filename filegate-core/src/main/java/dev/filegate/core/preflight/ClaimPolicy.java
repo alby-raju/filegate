@@ -21,5 +21,7 @@
 package dev.filegate.core.preflight;
 
 public enum ClaimPolicy {
-    IGNORE, REQUIRE_CONSISTENT, REQUIRE_PRESENT_AND_CONSISTENT
+    IGNORE,
+    REQUIRE_CONSISTENT,
+    REQUIRE_PRESENT_AND_CONSISTENT
 }

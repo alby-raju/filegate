@@ -22,5 +22,6 @@
 module dev.filegate.formats.images {
     requires transitive dev.filegate.core;
     requires java.desktop;
+
     exports dev.filegate.formats.images;
 }

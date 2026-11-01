@@ -23,12 +23,16 @@ package dev.filegate.worker.linux;
 import java.nio.file.Path;
 
 /** Local immutable image only. No host mounts, daemon sockets or credentials enter a task. */
-public record ContainerSpec(Path dockerBinary, String image, int uid, int gid, SandboxLimits limits) {
+public record ContainerSpec(
+        Path dockerBinary, String image, int uid, int gid, SandboxLimits limits) {
     public ContainerSpec {
-        if (!dockerBinary.isAbsolute() || image == null
-                || !(image.matches("sha256:[0-9a-f]{64}") || image.matches("[A-Za-z0-9./:_-]+@sha256:[0-9a-f]{64}"))
-                || uid <= 0 || gid <= 0) throw new IllegalArgumentException("Immutable image and non-root identity required");
+        if (!dockerBinary.isAbsolute()
+                || image == null
+                || !(image.matches("sha256:[0-9a-f]{64}")
+                        || image.matches("[A-Za-z0-9./:_-]+@sha256:[0-9a-f]{64}"))
+                || uid <= 0
+                || gid <= 0)
+            throw new IllegalArgumentException("Immutable image and non-root identity required");
         java.util.Objects.requireNonNull(limits, "limits");
     }
-
 }

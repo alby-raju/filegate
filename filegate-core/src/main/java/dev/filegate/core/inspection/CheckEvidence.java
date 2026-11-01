@@ -20,9 +20,9 @@
 
 package dev.filegate.core.inspection;
 
-import java.util.Objects;
-
 import dev.filegate.core.internal.validation.Identifiers;
+
+import java.util.Objects;
 
 /** One bounded check result. Free-form parser diagnostics are deliberately excluded. */
 public record CheckEvidence(String checkId, CheckStatus status, ReasonCode reason) {

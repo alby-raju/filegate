@@ -27,7 +27,15 @@ public final class RestartBackoff {
     private final long delayNanos;
     private volatile long lastFailure;
 
-    public RestartBackoff(Duration delay) { delayNanos = delay.toNanos(); }
-    public boolean active() { return lastFailure != 0 && System.nanoTime() - lastFailure < delayNanos; }
-    public void recordFailure() { lastFailure = System.nanoTime(); }
+    public RestartBackoff(Duration delay) {
+        delayNanos = delay.toNanos();
+    }
+
+    public boolean active() {
+        return lastFailure != 0 && System.nanoTime() - lastFailure < delayNanos;
+    }
+
+    public void recordFailure() {
+        lastFailure = System.nanoTime();
+    }
 }

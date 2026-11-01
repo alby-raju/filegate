@@ -35,7 +35,17 @@ public final class ApprovedInspection implements Approved {
         this.content = new VerifiedContent(artifact, report.policy(), bufferBytes);
     }
 
-    @Override public InspectionReport report() { return report; }
-    public ApprovedContent content() { return content; }
-    @Override public void close() { content.close(); }
+    @Override
+    public InspectionReport report() {
+        return report;
+    }
+
+    public ApprovedContent content() {
+        return content;
+    }
+
+    @Override
+    public void close() {
+        content.close();
+    }
 }

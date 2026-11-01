@@ -20,9 +20,9 @@
 
 package dev.filegate.core.internal.capture;
 
-import java.io.IOException;
-
 import dev.filegate.core.inspection.ReasonCode;
+
+import java.io.IOException;
 
 /** Internal control flow preserves a known violation even if closing the writer also fails. */
 final class CaptureFailure extends IOException {
@@ -34,5 +34,7 @@ final class CaptureFailure extends IOException {
         this.reason = reason;
     }
 
-    ReasonCode reason() { return reason; }
+    ReasonCode reason() {
+        return reason;
+    }
 }

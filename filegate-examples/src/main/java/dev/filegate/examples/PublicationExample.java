@@ -20,10 +20,10 @@
 
 package dev.filegate.examples;
 
+import dev.filegate.core.content.ApprovedContent;
+
 import java.io.IOException;
 import java.nio.file.Path;
-
-import dev.filegate.core.content.ApprovedContent;
 
 /** The host owns destination finalization and visibility. It must authorize publication first. */
 public final class PublicationExample {

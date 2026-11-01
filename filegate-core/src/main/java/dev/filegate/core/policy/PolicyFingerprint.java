@@ -20,13 +20,13 @@
 
 package dev.filegate.core.policy;
 
+import dev.filegate.core.internal.crypto.Sha256;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HexFormat;
 import java.util.List;
-
-import dev.filegate.core.internal.crypto.Sha256;
 
 /** Versioned canonical policy encoding; independent of assembly and execution. */
 final class PolicyFingerprint {
@@ -36,7 +36,8 @@ final class PolicyFingerprint {
         try {
             var bytes = new ByteArrayOutputStream();
             try (var output = new DataOutputStream(bytes)) {
-                // Versioned, length-delimited canonical encoding, independent of locale and map order.
+                // Versioned, length-delimited canonical encoding, independent of locale and map
+                // order.
                 output.writeUTF("filegate-policy-v2");
                 output.writeUTF(spec.name());
                 output.writeUTF(spec.use().name());

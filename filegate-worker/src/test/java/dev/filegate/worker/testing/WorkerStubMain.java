@@ -33,17 +33,21 @@ public final class WorkerStubMain {
         if (sandbox) LinuxContainmentProbe.verify(SandboxLimits.parse(args, 1));
         var request = WorkerProtocol.readRequest(System.in);
         if (sandbox) {
-            if (request.artifact().length() > 1024) throw new IllegalArgumentException("Fixture payload limit");
+            if (request.artifact().length() > 1024)
+                throw new IllegalArgumentException("Fixture payload limit");
             var digest = java.security.MessageDigest.getInstance("SHA-256");
             long length = 0;
             byte[] buffer = new byte[128];
-            for (int read; (read = System.in.read(buffer)) != -1;) {
+            for (int read; (read = System.in.read(buffer)) != -1; ) {
                 length += read;
-                if (length > request.artifact().length()) throw new java.io.IOException("Wrong payload length");
+                if (length > request.artifact().length())
+                    throw new java.io.IOException("Wrong payload length");
                 digest.update(buffer, 0, read);
             }
             if (length != request.artifact().length()
-                    || !java.util.HexFormat.of().formatHex(digest.digest()).equals(request.artifact().sha256())) {
+                    || !java.util.HexFormat.of()
+                            .formatHex(digest.digest())
+                            .equals(request.artifact().sha256())) {
                 throw new java.io.IOException("Wrong payload identity");
             }
         }
@@ -65,9 +69,17 @@ public final class WorkerStubMain {
                 System.out.flush();
             }
             default -> {
-                WorkerProtocol.writeResponse(System.out, new WorkerResponse(request,
-                        request.expectedChecks().stream().map(CheckEvidence::pass).toList()));
-                if (args[0].equals("trailing")) { System.out.write(42); System.out.flush(); }
+                WorkerProtocol.writeResponse(
+                        System.out,
+                        new WorkerResponse(
+                                request,
+                                request.expectedChecks().stream()
+                                        .map(CheckEvidence::pass)
+                                        .toList()));
+                if (args[0].equals("trailing")) {
+                    System.out.write(42);
+                    System.out.flush();
+                }
                 if (args[0].equals("late-exit")) Thread.sleep(60_000);
             }
         }

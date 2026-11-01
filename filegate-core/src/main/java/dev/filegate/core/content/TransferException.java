@@ -33,5 +33,7 @@ public final class TransferException extends IOException {
         this.failure = failure;
     }
 
-    public TransferFailure failure() { return failure; }
+    public TransferFailure failure() {
+        return failure;
+    }
 }

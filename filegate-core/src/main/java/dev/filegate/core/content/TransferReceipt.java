@@ -26,9 +26,13 @@ import dev.filegate.core.policy.Use;
 /** Transfer evidence, not a portable authorization or persistence token. */
 public sealed interface TransferReceipt permits VerifiedTransferReceipt {
     String transferId();
+
     ArtifactIdentity artifact();
+
     String policyFingerprint();
+
     Use use();
+
     String pendingDestinationId();
 
     default void validateFor(String destinationId, Use destinationUse) {

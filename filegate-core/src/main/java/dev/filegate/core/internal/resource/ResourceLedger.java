@@ -20,17 +20,19 @@
 
 package dev.filegate.core.internal.resource;
 
-import java.util.Optional;
-
 import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.resource.ResourceUsage;
+
+import java.util.Optional;
 
 public final class ResourceLedger {
     private final ResourceLimits limits;
     private int operations;
     private long bytes;
 
-    public ResourceLedger(ResourceLimits limits) { this.limits = limits; }
+    public ResourceLedger(ResourceLimits limits) {
+        this.limits = limits;
+    }
 
     public synchronized Optional<Reservation> reserve(long requested) {
         if (requested <= 0) {
@@ -53,9 +55,12 @@ public final class ResourceLedger {
         private final long reserved;
         private boolean released;
 
-        private Reservation(long reserved) { this.reserved = reserved; }
+        private Reservation(long reserved) {
+            this.reserved = reserved;
+        }
 
-        @Override public void close() {
+        @Override
+        public void close() {
             synchronized (ResourceLedger.this) {
                 if (!released) {
                     released = true;

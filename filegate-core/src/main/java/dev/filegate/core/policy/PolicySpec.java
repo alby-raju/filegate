@@ -20,14 +20,18 @@
 
 package dev.filegate.core.policy;
 
+import dev.filegate.core.internal.validation.Identifiers;
+
 import java.util.List;
 import java.util.Objects;
 
-import dev.filegate.core.internal.validation.Identifiers;
-
 /** Typed configuration; there is deliberately no permissive string-key parser. */
-public record PolicySpec(String name, Use use, long maxInputBytes,
-                         ExecutionMode executionMode, List<String> requiredChecks) {
+public record PolicySpec(
+        String name,
+        Use use,
+        long maxInputBytes,
+        ExecutionMode executionMode,
+        List<String> requiredChecks) {
     public static final int MAX_CHECKS = 64;
 
     public PolicySpec {

@@ -31,10 +31,13 @@ import java.util.concurrent.TimeoutException;
 public final class ProcessTermination {
     private final Duration grace;
 
-    public ProcessTermination(Duration grace) { this.grace = grace; }
+    public ProcessTermination(Duration grace) {
+        this.grace = grace;
+    }
 
     public boolean terminate(Process process) {
-        // Best-effort tree cleanup for transport tests. OS containment must control escaped descendants.
+        // Best-effort tree cleanup for transport tests. OS containment must control escaped
+        // descendants.
         List<ProcessHandle> children;
         boolean descendantsVisible = true;
         try {
@@ -54,8 +57,11 @@ public final class ProcessTermination {
                 if (child.isAlive()) {
                     long left = stop - System.nanoTime();
                     if (left <= 0) return false;
-                    try { child.onExit().get(left, TimeUnit.NANOSECONDS); }
-                    catch (ExecutionException | TimeoutException failure) { return false; }
+                    try {
+                        child.onExit().get(left, TimeUnit.NANOSECONDS);
+                    } catch (ExecutionException | TimeoutException failure) {
+                        return false;
+                    }
                 }
             }
             return descendantsVisible && children.stream().noneMatch(ProcessHandle::isAlive);
@@ -63,12 +69,19 @@ public final class ProcessTermination {
             interrupted = true;
             return false;
         } finally {
-            try { process.getInputStream().close(); } catch (IOException ignored) { }
-            try { process.getErrorStream().close(); } catch (IOException ignored) { }
-            try { process.getOutputStream().close(); } catch (IOException ignored) { }
+            try {
+                process.getInputStream().close();
+            } catch (IOException ignored) {
+            }
+            try {
+                process.getErrorStream().close();
+            } catch (IOException ignored) {
+            }
+            try {
+                process.getOutputStream().close();
+            } catch (IOException ignored) {
+            }
             if (interrupted) Thread.currentThread().interrupt();
         }
     }
-
-
 }

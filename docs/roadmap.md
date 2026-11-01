@@ -192,3 +192,9 @@ preparation, storage qualification, security review and adoption evidence.
 - Refactored worker CI: [run 41300740992](https://github.com/alby-raju/filegate/actions/runs/41300740992)
   passes on Linux and macOS, including actual container restrictions and timeout
   cleanup for commit `211b0c5`.
+
+- Architecture guardrails: package/dependency and responsibility maps plus source
+  migration notes are documented in `docs/architecture.md`. CONTRIBUTING records
+  ownership, extension and test boundaries. A pinned AOSP Java formatter is checked
+  during Maven validation. `clean verify` passes all 66 native tests; all 100 Java
+  copyright headers and all packaged LICENSE/NOTICE files are preserved.

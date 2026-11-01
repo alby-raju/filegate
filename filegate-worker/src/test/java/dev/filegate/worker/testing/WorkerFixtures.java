@@ -20,17 +20,19 @@
 
 package dev.filegate.worker.testing;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+
 import dev.filegate.worker.linux.SandboxLimits;
 import dev.filegate.worker.process.WorkerFailure;
 import dev.filegate.worker.process.WorkerRun;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-
 public final class WorkerFixtures {
     private WorkerFixtures() {}
+
     public static SandboxLimits sandboxLimits() {
         return new SandboxLimits(256L * 1024 * 1024, 32L * 1024 * 1024, 128, 1000);
     }
+
     public static WorkerFailure failure(WorkerRun run) {
         return assertInstanceOf(WorkerRun.Failed.class, run).failure();
     }

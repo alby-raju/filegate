@@ -20,17 +20,18 @@
 
 package dev.filegate.core.internal.capture;
 
-import java.util.List;
-import java.util.Objects;
-
 import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.inspection.ReasonCode;
+
+import java.util.List;
+import java.util.Objects;
 
 /** Capture either owns sealed bytes or reports a blocking reason; never a nullable tuple. */
 public sealed interface CaptureResult {
     List<CheckEvidence> evidence();
 
-    record Captured(CapturedArtifact artifact, List<CheckEvidence> evidence) implements CaptureResult {
+    record Captured(CapturedArtifact artifact, List<CheckEvidence> evidence)
+            implements CaptureResult {
         public Captured {
             Objects.requireNonNull(artifact, "artifact");
             evidence = List.copyOf(evidence);

@@ -21,5 +21,6 @@
 package dev.filegate.core.policy;
 
 public enum ExecutionMode {
-    EMBEDDED, ISOLATED
+    EMBEDDED,
+    ISOLATED
 }

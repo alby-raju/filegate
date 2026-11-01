@@ -22,5 +22,7 @@ package dev.filegate.core.inspection;
 
 public sealed interface Inspection extends AutoCloseable permits Approved, Blocked {
     InspectionReport report();
-    @Override void close();
+
+    @Override
+    void close();
 }
