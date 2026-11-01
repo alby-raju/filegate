@@ -1,0 +1,17 @@
+# Build output
+**/target/
+
+# Editors and operating systems
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local configuration, secrets and runtime data
+.env
+.env.*
+!.env.example
+*.log
+/local/
+/staging/
+/scratch/
