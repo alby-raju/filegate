@@ -21,6 +21,7 @@ package dev.filegate.worker.linux;
 
 import static dev.filegate.worker.testing.WorkerFixtures.sandboxLimits;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -70,4 +71,11 @@ class ContainerSpecTest {
 		assertThrows(IOException.class, () -> LinuxContainerRuntime.open(temp, spec,
 				new WorkerLimits(1, Duration.ofSeconds(2), Duration.ofSeconds(1), Duration.ZERO, 1024)));
 	}
+	@Test
+	void immutableImageAliasesHaveTheSameBoundedContentIdentity() {
+		String digest = "sha256:" + "a".repeat(64);
+		for (String image : List.of(digest, "registry.example.invalid/team/worker@" + digest))
+			assertEquals(digest, new ContainerSpec(Path.of("/usr/bin/docker"), image, 65534, 65534, sandboxLimits()).imageIdentity());
+	}
+
 }

@@ -42,6 +42,7 @@ limitations under the License.
 		<module>filegate-format-office</module>
 		<module>filegate-format-spreadsheets</module>
 		<module>filegate-images-worker</module>
+		<module>filegate-spreadsheets-worker</module>
 		<module>filegate-examples</module>
 	</modules>
 	<dependencyManagement>

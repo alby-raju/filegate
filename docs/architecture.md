@@ -15,6 +15,8 @@ flowchart BT
     Spreadsheets["filegate-format-spreadsheets · POI · worker-only"] --> Office
     ImageWorker["filegate-images-worker"] --> Worker
     ImageWorker --> Images
+    SpreadsheetWorker["filegate-spreadsheets-worker"] --> Worker
+    SpreadsheetWorker --> Spreadsheets
     Examples["filegate-examples"] --> Core
 ```
 
@@ -141,3 +143,14 @@ Existing capture, quota, lease, transfer, worker, containment and format tests
 remain the behavioral evidence. Preserve the existing Eclipse formatting. The
 incompatible Google Java Format check is removed; automated formatting awaits a
 shared exported Eclipse profile.
+
+## Shared isolated adapters and worker input
+
+`IsolatedWorkerCheck` owns host-side policy/request/evidence binding for the format
+adapters. `IsolatedImageCheck` and `IsolatedSpreadsheetCheck` assemble immutable
+profile descriptors and fixed worker programs. They share the same final Linux
+runtime and never run parsers in the host. `WorkerInput` owns worker-side bounded
+capture, read-only input, post-inspection identity checks and scratch cleanup.
+Workbook semantics, formula operand checks, defined-name graphs, package roles and
+schema validation have separate non-exported collaborators in the spreadsheet
+artifact. Only profiles, reports, violations and the worker-only facade are exported.

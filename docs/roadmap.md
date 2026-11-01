@@ -29,7 +29,7 @@ claim. No slice may approve content with missing mandatory evidence.
 | M2.3 | Supported Linux containment | Non-root, read-only code/input, no credentials/network, bounded memory/CPU/process/scratch; deployment-level escape and kill tests; no embedded fallback | Implemented; Linux smoke validated, full security qualification open |
 | M2.4 | Restricted PNG/JPEG inspectors | Published encoding/termination/trailing-data/animation/metadata/dimension coverage; bounded isolated decoding if promised; malformed corpus and fuzz regression | Inspector and isolated adapter implemented; broader corpus and qualification pending |
 | M3.1 | Freeze one adopter contract | Formats, intended use, AV, budgets, rejection tolerance, storage transaction semantics and representative corpus approved by adopter | Deployment target selected; budgets, use and corpus pending |
-| M3.2 | Complete required format coverage | PDF and/or DOCX/XLSX only if required; parser budgets and prohibited feature checks; no raw-keyword safety claims; pinned worker dependencies | After M3.1 |
+| M3.2 | Complete required format coverage | PDF and/or DOCX/XLSX only if required; parser budgets and prohibited feature checks; no raw-keyword safety claims; pinned worker dependencies | Basic XLSX implemented; PDF/DOCX and broader XLSX pending |
 | M3.3 | Required AV integration | Scan exact artifact; configured size/coverage limits; outages and uncertain results block; no implicit dependency activation | If pilot requires AV |
 | M3.4 | End-to-end host integration | Authorization and upload limits before spooling; private pending writes; immutable stored object identity; abort and ambiguous-commit recovery | Requires storage adapter contract |
 | M4.1 | Optional preparation facade and policy pair | Separate eligibility/output fingerprints and verdicts; eligibility grants no content; full envelope reserved before capture | Only if pilot requires preparation |
@@ -276,3 +276,12 @@ preparation, storage qualification, security review and adoption evidence.
   same implementation. Three native tests cover correct bytes/permissions/cleanup,
   short/excess/wrong-digest payloads and mutation detection. Protocol bytes and core
   approval ownership are unchanged; Linux image regressions remain required in CI.
+
+- Isolated basic-XLSX slice: added explicit `IsolatedSpreadsheetCheck` and disposable
+  worker, with pinned separate runtime libraries. The common host adapter handles
+  policy/evidence binding for images and spreadsheets; immutable registry-qualified
+  image references normalize to their bounded content digest. Native configuration,
+  alias and existing regressions pass. A real gate/container/POSIX test is added for
+  valid XLSX publication, disallowed-formula rejection and closed-runtime refusal;
+  Linux results are pending this push. Broader XLSX/PDF/DOCX and qualification remain
+  open; no production readiness is claimed.

@@ -33,4 +33,9 @@ public record ContainerSpec(Path dockerBinary, String image, int uid, int gid, S
 			throw new IllegalArgumentException("Immutable image and non-root identity required");
 		java.util.Objects.requireNonNull(limits, "limits");
 	}
+	/** Canonical immutable content identity, independent of registry aliases. */
+	public String imageIdentity() {
+		return image.substring(image.lastIndexOf("sha256:"));
+	}
+
 }

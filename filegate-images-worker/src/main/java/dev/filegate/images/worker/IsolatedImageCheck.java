@@ -21,15 +21,13 @@ package dev.filegate.images.worker;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import dev.filegate.core.inspection.CheckEvidence;
-import dev.filegate.core.inspection.CheckStatus;
-import dev.filegate.core.inspection.ReasonCode;
 import dev.filegate.core.policy.CheckDescriptor;
 import dev.filegate.core.policy.CompiledPolicy;
 import dev.filegate.core.policy.ExecutionMode;
@@ -38,52 +36,36 @@ import dev.filegate.core.spi.IsolatedInspectionCheck;
 import dev.filegate.formats.images.ImageProfile;
 import dev.filegate.images.worker.internal.ImageWorkerMain;
 import dev.filegate.worker.linux.LinuxContainerRuntime;
-import dev.filegate.worker.process.WorkerRun;
-import dev.filegate.worker.protocol.ProtocolBinding;
+import dev.filegate.worker.linux.IsolatedWorkerCheck;
 
 /** Immutable host adapter; the caller owns and closes the Linux runtime. */
 public final class IsolatedImageCheck implements IsolatedInspectionCheck {
-	private final LinuxContainerRuntime runtime;
-	private final ImageProfile profile;
-	private final CheckDescriptor descriptor;
+	private final IsolatedWorkerCheck delegate;
 
 	public IsolatedImageCheck(String id, LinuxContainerRuntime runtime, ImageProfile profile) {
-		this.runtime = Objects.requireNonNull(runtime, "runtime");
-		this.profile = Objects.requireNonNull(profile, "profile");
-		if (profile.maxInputBytes() > runtime.limits().scratchBytes() / 2)
-			throw new IllegalArgumentException("Image input exceeds the sandbox scratch envelope");
+		Objects.requireNonNull(runtime, "runtime");
+		Objects.requireNonNull(profile, "profile");
 		try {
 			String coverage = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
 					.digest(profile.toString().getBytes(StandardCharsets.UTF_8)));
-			descriptor = new CheckDescriptor(id, runtime.image(), "restricted-images-v1/" + coverage,
-					ExecutionMode.ISOLATED);
-		} catch (java.security.NoSuchAlgorithmException impossible) {
+			var descriptor = new CheckDescriptor(id, runtime.imageIdentity(), "restricted-images-v1/" + coverage, ExecutionMode.ISOLATED);
+			var arguments = new ArrayList<>(List.of(ImageWorkerMain.class.getName()));
+			arguments.addAll(List.of(runtime.limits().arguments()));
+			arguments.addAll(List.of(Long.toString(profile.maxInputBytes()), Long.toString(profile.maxPixels()),
+					Long.toString(profile.maxDecodedBytes()), Long.toString(profile.maxMetadataBytes()), Integer.toString(profile.maxSegments())));
+			delegate = new IsolatedWorkerCheck(descriptor, runtime, profile.maxInputBytes(), ImageWorkerMain.BUILD, arguments);
+		} catch (NoSuchAlgorithmException impossible) {
 			throw new IllegalStateException(impossible);
 		}
 	}
 
 	@Override
 	public CheckDescriptor descriptor() {
-		return descriptor;
+		return delegate.descriptor();
 	}
 
 	@Override
 	public CheckEvidence inspect(InspectionInput input, CompiledPolicy policy) throws Exception {
-		if (policy.executionMode() != ExecutionMode.ISOLATED || policy.maxInputBytes() > profile.maxInputBytes()
-				|| !policy.checks().contains(descriptor))
-			return new CheckEvidence(descriptor.id(), CheckStatus.ERROR, ReasonCode.CHECK_ERROR);
-		var binding = new ProtocolBinding(UUID.randomUUID(), input.identity(), policy.fingerprint(),
-				ImageWorkerMain.BUILD, List.of(descriptor.id()));
-		var arguments = new ArrayList<>(List.of(ImageWorkerMain.class.getName()));
-		arguments.addAll(List.of(runtime.limits().arguments()));
-		arguments.addAll(List.of(Long.toString(profile.maxInputBytes()), Long.toString(profile.maxPixels()),
-				Long.toString(profile.maxDecodedBytes()), Long.toString(profile.maxMetadataBytes()),
-				Integer.toString(profile.maxSegments())));
-		try (var stream = input.openStream()) {
-			var run = runtime.execute(binding, stream, arguments);
-			if (run instanceof WorkerRun.Completed completed)
-				return completed.response().evidence().getFirst();
-			return new CheckEvidence(descriptor.id(), CheckStatus.ERROR, ReasonCode.CHECK_ERROR);
-		}
+		return delegate.inspect(input, policy);
 	}
 }

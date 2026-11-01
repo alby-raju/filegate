@@ -136,6 +136,10 @@ public final class LinuxContainerRuntime implements AutoCloseable {
 		return spec.image();
 	}
 
+	public String imageIdentity() {
+		return spec.imageIdentity();
+	}
+
 	private void cleanControlDirectory() {
 		if (closed.get() && active.isEmpty()) {
 			try {
