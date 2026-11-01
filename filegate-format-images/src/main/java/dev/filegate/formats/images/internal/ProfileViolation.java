@@ -17,12 +17,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.formats.images.internal;
 
 import java.io.IOException;
 
 /** A definite violation of this explicitly restricted format profile. */
 public final class ProfileViolation extends IOException {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 }
