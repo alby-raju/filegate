@@ -11,6 +11,7 @@ and cleanup. Optional format code does not enter the core runtime.
 flowchart BT
     Worker["filegate-worker"] --> Core["filegate-core · java.base"]
     Images["filegate-format-images · java.desktop"] --> Core
+    Office["filegate-format-office · java.base/java.xml · inventory only"]
     ImageWorker["filegate-images-worker"] --> Worker
     ImageWorker --> Images
     Examples["filegate-examples"] --> Core
@@ -21,6 +22,10 @@ and image artifacts are independently installable. The image parser artifact has
 no dependency on process supervision. The image-worker adapter assembles those
 capabilities explicitly. Examples implement host-owned persistence and depend on
 the image worker only for integration tests. JUnit is a test dependency.
+
+The Office package reader is independent of core and currently supplies inventory
+only. It is not a registered DOCX/XLSX inspector. Its ZIP and XML collaborators
+are non-exported. See [the envelope and remaining checks](office-package-profile.md).
 
 ## Public core packages
 

@@ -240,3 +240,11 @@ preparation, storage qualification, security review and adoption evidence.
   and internal spreadsheet references are preserved without execution. Active
   content, automatic external loading, encryption and unsupported formats block.
   Detailed profiles, budgets and adopter corpus remain acceptance gates.
+
+- M3.2 shared Office foundation: added a separate JDK ZIP/XML package-boundary
+  artifact for DOCX/XLSX. It validates local/central ZIP consistency, canonical
+  paths, actual expansion and CRC, and securely parses XML under package-wide
+  event/character budgets. Eight tests cover stored/deflated ZIP, all truncated
+  prefixes, alias/traversal/case ambiguity, encryption/ZIP64, corrupted binary CRC,
+  dishonest expansion metadata, DTD/entities and XML budgets. Inventory grants no
+  acceptance evidence; semantic inspectors and isolated integration remain open.

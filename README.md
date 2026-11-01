@@ -10,7 +10,8 @@ Verified transfers bind receipts to destination IDs and uses; the host example
 checks persisted bytes before publication. A separate Linux container runtime and
 restricted image inspector are connected through an explicit isolated adapter.
 No production format profiles are installed by default; it is not yet qualified to
-protect uploads. PDF/DOCX inspection and optional preparation remain planned.
+protect uploads. PDF/DOCX/XLSX acceptance and optional preparation remain planned. The shared Office
+ZIP/XML inventory boundary is implemented; it does not grant document approval.
 
 ## Build
 
@@ -62,6 +63,7 @@ filegate-core/    JDK-only policy, capture, inspection and verified transfer
 filegate-worker/  Bounded protocol, process supervision and Linux container runtime
 filegate-format-images/ Restricted PNG/JPEG inspector
 filegate-images-worker/ Linux-isolated image adapter and disposable worker
+filegate-format-office/ Bounded OOXML ZIP/XML inventory; semantic checks pending
 filegate-examples/ POSIX host publication example
 docs/design/     Original proposal and text transcription
 docs/decisions/  Recorded implementation decisions

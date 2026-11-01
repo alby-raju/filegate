@@ -39,6 +39,7 @@ limitations under the License.
 		<module>filegate-core</module>
 		<module>filegate-worker</module>
 		<module>filegate-format-images</module>
+		<module>filegate-format-office</module>
 		<module>filegate-images-worker</module>
 		<module>filegate-examples</module>
 	</modules>
