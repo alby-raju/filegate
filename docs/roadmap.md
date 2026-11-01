@@ -267,3 +267,12 @@ preparation, storage qualification, security review and adoption evidence.
   regression evidence. Sixteen spreadsheet/formula tests pass locally; approval
   integration is the next slice. Charts/tables/media/comments and wider XLSX target
   features are not claimed. Core remains independent of the parser dependencies.
+
+- Basic-XLSX semantic CI: [run 41331226505](https://github.com/alby-raju/filegate/actions/runs/41331226505)
+  passes Linux/macOS, existing container regressions and runtime-inventory checks.
+- Shared worker input lifecycle: extracted fixed-buffer identity-bound capture for
+  parser workers. Captured copies become read-only, are checked again after
+  inspection and are removed before evidence is emitted. Image workers use the
+  same implementation. Three native tests cover correct bytes/permissions/cleanup,
+  short/excess/wrong-digest payloads and mutation detection. Protocol bytes and core
+  approval ownership are unchanged; Linux image regressions remain required in CI.

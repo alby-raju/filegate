@@ -19,7 +19,8 @@ the caller owns its lifecycle and must close it after in-flight inspections fini
 Each call sends a fresh request ID, captured identity, exact policy fingerprint,
 worker build identifier and check ID. The worker verifies containment, accepts one
 bounded request and streams at most the declared length into private scratch.
-It verifies EOF, length and SHA-256 before invoking PNG/JPEG inspection. Only a
+The shared `WorkerInput` helper verifies EOF, length and SHA-256 before invoking
+PNG/JPEG inspection, makes the input copy read-only and verifies it again afterward. Only a
 single bound response is accepted. The existing supervisor enforces task timeout,
 stderr/output bounds and confirmed container removal before returning evidence.
 Any startup, transport, parser, timeout or termination failure blocks content.

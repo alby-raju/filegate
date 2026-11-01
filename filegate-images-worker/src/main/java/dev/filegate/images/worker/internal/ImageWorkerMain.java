@@ -20,14 +20,13 @@
 package dev.filegate.images.worker.internal;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.util.HexFormat;
 import java.util.List;
 
 import dev.filegate.formats.images.ImageProfile;
 import dev.filegate.formats.images.RestrictedImageInspector;
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.worker.input.WorkerInput;
 import dev.filegate.worker.linux.LinuxContainmentProbe;
 import dev.filegate.worker.linux.SandboxLimits;
 import dev.filegate.worker.protocol.WorkerProtocol;
@@ -52,28 +51,11 @@ public final class ImageWorkerMain {
 				|| request.artifact().length() > profile.maxInputBytes()
 				|| profile.maxInputBytes() > limits.scratchBytes() / 2)
 			throw new IOException("Worker contract mismatch");
-		Path captured = Files.createTempFile(Path.of("/tmp"), "image-", ".input");
-		try {
-			var digest = MessageDigest.getInstance("SHA-256");
-			long length = 0;
-			try (var output = Files.newOutputStream(captured)) {
-				byte[] buffer = new byte[8192];
-				for (int read; (read = System.in.read(buffer)) != -1;) {
-					if (read > request.artifact().length() - length)
-						throw new IOException("Excess input");
-					length += read;
-					digest.update(buffer, 0, read);
-					output.write(buffer, 0, read);
-				}
-			}
-			if (length != request.artifact().length()
-					|| !HexFormat.of().formatHex(digest.digest()).equals(request.artifact().sha256()))
-				throw new IOException("Input identity mismatch");
-			var evidence = new RestrictedImageInspector(profile).inspect(request.expectedChecks().getFirst(), captured);
-			Files.delete(captured);
-			WorkerProtocol.writeResponse(System.out, new WorkerResponse(request, List.of(evidence)));
-		} finally {
-			Files.deleteIfExists(captured);
+		CheckEvidence evidence;
+		try (var captured = WorkerInput.capture(System.in, request.artifact(), Path.of("/tmp"), profile.maxInputBytes())) {
+			evidence = new RestrictedImageInspector(profile).inspect(request.expectedChecks().getFirst(), captured.path());
+			captured.verifyUnchanged();
 		}
+		WorkerProtocol.writeResponse(System.out, new WorkerResponse(request, List.of(evidence)));
 	}
 }
