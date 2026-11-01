@@ -234,3 +234,9 @@ preparation, storage qualification, security review and adoption evidence.
   profile, generated the five-artifact SBOM, and added packaged-notice/module
   membership checks plus CI artifact retention. Container/JDK inventory, release
   identity and production qualification remain open; no artifacts are published.
+
+- Document scope agreed: private-storage/download workflows for PNG/JPEG, PDF,
+  DOCX and XLSX, with configurable 25 MiB initial upload target. Ordinary formulas
+  and internal spreadsheet references are preserved without execution. Active
+  content, automatic external loading, encryption and unsupported formats block.
+  Detailed profiles, budgets and adopter corpus remain acceptance gates.
