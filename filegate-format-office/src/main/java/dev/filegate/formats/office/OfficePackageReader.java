@@ -27,9 +27,11 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.zip.ZipInputStream;
 
 import dev.filegate.formats.office.internal.XmlEnvelope;
+import dev.filegate.formats.office.internal.XmlPartVisitor;
 import dev.filegate.formats.office.internal.ZipEnvelope;
 
 /**
@@ -44,6 +46,10 @@ public final class OfficePackageReader {
 	}
 
 	public OfficePackageInventory read(Path captured) throws IOException {
+		return read(captured, name -> (reader, event) -> { });
+	}
+
+	OfficePackageInventory read(Path captured, Function<String, XmlPartVisitor> visitors) throws IOException {
 		var expected = ZipEnvelope.read(captured, limits);
 		var parts = new HashMap<String, OfficePackageInventory.Part>();
 		var xml = new XmlEnvelope(limits);
@@ -57,7 +63,7 @@ public final class OfficePackageReader {
 				var root = new XmlEnvelope.Root("", "");
 				String name = entry.name().toLowerCase(Locale.ROOT);
 				if (name.endsWith(".xml") || name.endsWith(".rels"))
-					root = xml.inspect(bounded);
+					root = xml.inspect(bounded, visitors.apply(entry.name()));
 				byte[] buffer = new byte[8192];
 				while (bounded.read(buffer) != -1) { /* Verify all bytes and ZIP CRC, including unparsed binary parts. */ }
 				if (bounded.count != entry.size() || local.getSize() != entry.size()

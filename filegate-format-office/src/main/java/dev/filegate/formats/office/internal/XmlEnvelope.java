@@ -50,7 +50,7 @@ public final class XmlEnvelope {
 		});
 	}
 
-	public Root inspect(InputStream input) throws IOException {
+	public Root inspect(InputStream input, XmlPartVisitor visitor) throws IOException {
 		try {
 			var reader = factory.createXMLStreamReader(input);
 			try {
@@ -81,6 +81,7 @@ public final class XmlEnvelope {
 							XMLStreamConstants.PROCESSING_INSTRUCTION -> throw invalid();
 					default -> { }
 					}
+					visitor.visit(reader, event);
 				}
 				if (root == null || depth != 0)
 					throw invalid();

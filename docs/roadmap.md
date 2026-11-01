@@ -248,3 +248,14 @@ preparation, storage qualification, security review and adoption evidence.
   prefixes, alias/traversal/case ambiguity, encryption/ZIP64, corrupted binary CRC,
   dishonest expansion metadata, DTD/entities and XML budgets. Inventory grants no
   acceptance evidence; semantic inspectors and isolated integration remain open.
+
+- Office foundation CI: [run 41326742046](https://github.com/alby-raju/filegate/actions/runs/41326742046)
+  passes Linux/macOS, container regressions and six-artifact SBOM/notices checks.
+- M3.2 manifest slice: namespace-aware content types and relationship validation
+  identifies macro-free DOCX/XLSX package candidates, resolves internal targets,
+  and restricts external relationships to explicit clickable-link policies. Nine
+  manifest tests cover type/root spoofing, duplicate/missing targets, unsafe schemes,
+  external-resource fetching, path escape, namespace ambiguity and hidden relationship
+  views. The full native suite passes 88 tests; four container tests are skipped
+  locally. Package candidates still grant no acceptance evidence. Workbook/Word
+  semantics, formulas, media coverage and isolated document execution remain open.
