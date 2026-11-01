@@ -67,4 +67,10 @@ docs/roadmap.md  Work sequence and acceptance evidence
 
 Document format and preparation artifacts will be added as their implementation
 begins. The provisional Maven coordinates are `dev.filegate:*:0.1.0-SNAPSHOT`;
-publication coordinates and licensing must be settled before distribution.
+publication coordinates must be settled before distribution.
+
+## License
+
+Copyright 2026 alby-raju. FileGate is licensed under the
+[Apache License, Version 2.0](LICENSE). See [NOTICE](NOTICE) for project attribution
+and the [source header template](docs/license-header.txt) for new files.

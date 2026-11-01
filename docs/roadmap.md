@@ -149,3 +149,13 @@ preparation, storage qualification, security review and adoption evidence.
 - User requested stopping after the current implementation for repository cleanup
   and enhancements. This checkpoint records the image inspector without beginning
   the next isolated integration slice.
+
+- Repository enhancement 1: Apache 2.0 selected. Added the unchanged official
+  license, project NOTICE and full source-header template with the current author
+  attribution. Maven metadata declares the license and every artifact packages
+  LICENSE/NOTICE under META-INF. Remaining release gates are unchanged.
+
+- Licensing validation: Maven `package` succeeds with tests skipped for this
+  comment/metadata change. All 65 Java bodies match the previous commit exactly;
+  header/XML/link checks pass and all four JARs contain byte-for-byte root LICENSE
+  and NOTICE copies. No feature implementation was resumed.
