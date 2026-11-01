@@ -1,0 +1,6 @@
+package dev.filegate.worker;
+
+public enum WorkerFailure {
+    CAPACITY, BACKOFF, CLOSED, TIMEOUT, CANCELLED, LAUNCH_FAILED,
+    CRASH, PROTOCOL, STDERR_LIMIT, TERMINATION_FAILED
+}

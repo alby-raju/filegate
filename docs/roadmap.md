@@ -25,7 +25,7 @@ claim. No slice may approve content with missing mandatory evidence.
 | M1.1 | Bounded candidate recognition and claim policy | PNG/JPEG/PDF/ZIP candidates, short/truncated/unknown input, spoofed claims; signatures never substitute for required structure checks | Complete |
 | M1.2 | Preflight integration and corpus | Capture-time envelope rejection, `NOT_RUN` evidence for skipped checks, ambiguous candidates; no format approval until supported inspectors exist | Complete |
 | M2.1 | Worker artifact and bounded protocol | Frame/evidence/stderr limits; request/digest/policy/build binding; stale, missing, duplicate and malformed responses block | Complete |
-| M2.2 | Fixed worker pool and lifecycle | One task per worker; bounded wait; crash/timeout termination; cancellation; restart backoff and saturation tests | Next |
+| M2.2 | Fixed worker pool and lifecycle | One task per worker; bounded wait; crash/timeout termination; cancellation; restart backoff and saturation tests | Complete |
 | M2.3 | Supported Linux containment | Non-root, read-only code/input, no credentials/network, bounded memory/CPU/process/scratch; deployment-level escape and kill tests; no embedded fallback | Requires Linux validation environment |
 | M2.4 | Restricted PNG/JPEG inspectors | Published encoding/termination/trailing-data/animation/metadata/dimension coverage; bounded isolated decoding if promised; malformed corpus and fuzz regression | After M2.3 |
 | M3.1 | Freeze one adopter contract | Formats, intended use, AV, budgets, rejection tolerance, storage transaction semantics and representative corpus approved by adopter | Requires pilot decisions |
@@ -118,3 +118,10 @@ not completed features.
   implements versioned 32 KiB frames, complete binding and exact bounded evidence
   sets. Six protocol tests include 500 deterministic random malformed frames.
   This is transport framing, not sandbox containment or a production inspector.
+
+- M2.2: `mvn verify` passes 52 tests, including real disposable subprocess faults.
+  Worker slots and I/O queues are fixed, admission is nonblocking, deadlines kill
+  hung tasks, diagnostic bytes are capped and restart backoff prevents storms.
+  Unconfirmed termination quarantines the domain. Native JVM tests require host
+  process enumeration; a subprocess is not containment and this pool is not yet
+  accepted by the core as an isolated production executor.
