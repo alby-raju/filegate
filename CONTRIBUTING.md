@@ -10,6 +10,7 @@ Use JDK 21 and Maven 3.9 or newer.
 ```sh
 mvn spotless:apply
 mvn clean verify
+scripts/check-repository.sh
 ```
 
 The parent POM pins the formatter, build plugins and shared JUnit version. Java
@@ -52,3 +53,22 @@ Use the [full project header](docs/license-header.txt) for first-party source an
 preserve existing attribution. Keep third-party notices intact. New dependencies
 need a justified boundary, a pinned version and attribution appropriate to their
 distribution. LICENSE and NOTICE must remain included in artifact JARs.
+
+## Repository hygiene and review
+
+Maven output (`target/`), IDE compiler output (`bin/`, `out/`), `.class` files and
+Eclipse project settings are local files. Ignore them; do not force-add them.
+CI checks the Git index independently of `.gitignore`. An IDE staging view can be
+stale: use `git status --short` to inspect the actual index.
+
+The main branch requires a pull request, owner review, resolved conversations and
+successful Linux/macOS verification. Administrators have an explicit bypass for
+repository maintenance. Use normal pull requests for routine work and reserve the
+bypass for deliberate maintenance. See [the security policy](SECURITY.md) for
+private vulnerability reporting. Dependabot proposes Maven and Actions updates;
+updates still pass the same review and verification gates.
+
+CI retries at most three times when Maven reports a transient artifact-download
+failure (HTTP 429/502/503/504 or a connection timeout/reset). It fails immediately
+on compilation, formatting or test failures. The Linux containment pass runs
+offline against the dependencies already resolved by the first build.

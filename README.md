@@ -71,6 +71,11 @@ Document format and preparation artifacts will be added as their implementation
 begins. The provisional Maven coordinates are `dev.filegate:*:0.1.0-SNAPSHOT`;
 publication coordinates must be settled before distribution.
 
+## Security and contributions
+
+Report vulnerabilities through [private reporting](SECURITY.md). Development and
+review conventions are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
 Copyright 2026 alby-raju. FileGate is licensed under the
