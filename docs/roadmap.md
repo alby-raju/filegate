@@ -17,8 +17,8 @@ claim. No slice may approve content with missing mandatory evidence.
 | Slice | Scope | Acceptance evidence | Status |
 | --- | --- | --- | --- |
 | R0 | Record this plan and proposal traceability | Review requirements against proposal sections 1–9 | Complete |
-| M0.1 | Immutable policies, explicit versioned checks, three outcomes and immutable evidence | Unknown/missing capabilities rejected; canonical fingerprints stable; missing/duplicate/foreign evidence blocks; rejection precedence | Next |
-| M0.2 | Atomic resource admission and private bounded capture | Denial before reading; concurrent quota limits; actual byte counting; exact limit/limit+1; digest; source ownership; I/O and deletion failures | Planned |
+| M0.1 | Immutable policies, explicit versioned checks, three outcomes and immutable evidence | Unknown/missing capabilities rejected; canonical fingerprints stable; missing/duplicate/foreign evidence blocks; rejection precedence | Complete |
+| M0.2 | Atomic resource admission and private bounded capture | Denial before reading; concurrent quota limits; actual byte counting; exact limit/limit+1; digest; source ownership; I/O and deletion failures | Next |
 | M0.3 | Scoped inspection facade, sequential embedded checks and content leases | Only complete evidence grants a handle; inspector failures incomplete; close blocks new copies; active copies retain storage; no public stage path | Planned |
 | M0.4 | Verified release, receipt binding and abort-safe local storage example | Tampering, truncated/failed copies, wrong use/destination, abandoned targets, finalization and commit failures; persisted bytes verified | Planned |
 | M0.5 | Integration docs and CI | Executable workflow example; JDK-only packaged runtime; clean build on Java 21; documented host obligations and timeout limits | Planned |
@@ -70,3 +70,9 @@ not completed features.
 
 - Repository scaffold builds on Java 21; no behavior was implemented before R0.
 - R0: detailed commit sequence and proposal traceability recorded.
+
+- M0.1: `mvn verify` passes 6 tests covering canonical/version-bound fingerprints,
+  snapshot immutability, absent/incompatible capabilities, incomplete evidence and
+  rejection precedence. Typed policy input cannot silently ignore unknown keys.
+- Scope update: user requested all offered workflows: PNG/JPEG, PDF/DOCX and mixed
+  attachments. Concrete deployment budgets and preparation operations remain open.

@@ -4,7 +4,8 @@ FileGate is a proposed Java library for policy-based attachment inspection and
 verified release of approved bytes. Optional preparation will produce a separate
 derivative and require its own release checks.
 
-This repository is the project foundation. Inspection, isolation, preparation and
+The foundation currently implements immutable policy compilation and fail-closed
+evidence aggregation. Capture, inspection execution, isolation, preparation and
 verified transfer are not implemented yet. It is not ready to protect uploads.
 
 ## Build
@@ -16,8 +17,9 @@ mvn verify
 ```
 
 The initial reactor contains `filegate-core`, with a JDK-only runtime dependency
-boundary. Its Java module descriptor establishes that boundary; there is no public
-API or test suite yet. The build currently verifies only the scaffold.
+boundary. JUnit is test-only. The tests exercise policy snapshots, capability
+validation, fingerprint binding and evidence precedence; no format coverage is
+claimed.
 
 ## Design
 
