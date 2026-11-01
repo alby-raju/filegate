@@ -198,3 +198,9 @@ preparation, storage qualification, security review and adoption evidence.
   ownership, extension and test boundaries. A pinned AOSP Java formatter is checked
   during Maven validation. `clean verify` passes all 66 native tests; all 100 Java
   copyright headers and all packaged LICENSE/NOTICE files are preserved.
+
+- Final registration review: prefix identifiers and read budgets are frozen at
+  registration and shared by bound plans and capture. A regression verifies that
+  later plugin metadata changes cannot change an existing gate’s budget. The full
+  suite passes 67 native tests with two Linux-only tests skipped locally. All 101
+  Java copyright headers and all four packaged license notices remain intact.

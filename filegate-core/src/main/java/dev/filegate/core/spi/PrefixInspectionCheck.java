@@ -27,6 +27,7 @@ import dev.filegate.core.inspection.InputClaims;
 public interface PrefixInspectionCheck extends InspectionCheck {
     int MAX_PREFIX_BYTES = 4096;
 
+    /** Required bytes, frozen at registration; must be between 1 and MAX_PREFIX_BYTES. */
     int prefixBytes();
 
     CheckEvidence inspectPrefix(byte[] prefix, InputClaims claims) throws Exception;

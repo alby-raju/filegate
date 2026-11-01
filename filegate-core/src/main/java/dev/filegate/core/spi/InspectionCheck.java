@@ -23,7 +23,11 @@ package dev.filegate.core.spi;
 import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.policy.CheckDescriptor;
 
-/** Explicitly trusted embedded check. Deep hostile-file parsers require isolated workers. */
+/**
+ * Explicitly trusted embedded check. Metadata is bound at gate construction.
+ * Implementations may serve concurrent files and must be thread-safe.
+ * Deep hostile-file parsers require isolated workers.
+ */
 public interface InspectionCheck {
     CheckDescriptor descriptor();
 

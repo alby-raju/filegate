@@ -138,6 +138,44 @@ class PrefixPluginTest {
         }
     }
 
+    @Test
+    void registrationFreezesPrefixMetadataForExistingPlans() throws Exception {
+        var declared = new AtomicInteger(4);
+        var prefix =
+                new PrefixInspectionCheck() {
+                    @Override
+                    public CheckDescriptor descriptor() {
+                        return new CheckDescriptor(
+                                "a.prefix",
+                                "1",
+                                "test-only",
+                                ExecutionMode.EMBEDDED,
+                                CheckKind.PREFLIGHT);
+                    }
+
+                    @Override
+                    public int prefixBytes() {
+                        return declared.get();
+                    }
+
+                    @Override
+                    public CheckEvidence inspectPrefix(byte[] bytes, InputClaims claims) {
+                        assertEquals(4, bytes.length);
+                        return CheckEvidence.pass("a.prefix");
+                    }
+                };
+        try (var gate =
+                gate(
+                        prefix,
+                        TestChecks.check("z.content", input -> CheckEvidence.pass("z.content")))) {
+            declared.set(PrefixInspectionCheck.MAX_PREFIX_BYTES + 1);
+            try (var result =
+                    gate.inspect(new ByteArrayInputStream(new byte[64]), InputClaims.NONE)) {
+                assertEquals(Verdict.APPROVED, result.report().verdict());
+            }
+        }
+    }
+
     private FileGate gate(InspectionCheck... checks) throws Exception {
         var installed = List.of(checks);
         var descriptors = installed.stream().map(InspectionCheck::descriptor).toList();

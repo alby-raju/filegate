@@ -47,6 +47,7 @@ not a hostile-code sandbox.
 | Internal collaborator | Owns |
 | --- | --- |
 | `CheckRegistry` | Explicit plugin identities, startup validation and immutable bound plans |
+| `BoundPrefixCheck` | Frozen prefix identity and byte budget, independent of later plugin metadata changes |
 | `InspectionEngine` | Coordination of one captured artifact through checks and result issuance |
 | `CheckRunner` | Sequential full-content checks and scoped inspector inputs |
 | `CheckInvocation` | Shared translation of exceptions, cancellation and malformed plugin evidence |

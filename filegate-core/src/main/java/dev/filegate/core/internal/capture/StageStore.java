@@ -23,10 +23,10 @@ package dev.filegate.core.internal.capture;
 import dev.filegate.core.content.ArtifactIdentity;
 import dev.filegate.core.inspection.InputClaims;
 import dev.filegate.core.inspection.ReasonCode;
+import dev.filegate.core.internal.execution.BoundPrefixCheck;
 import dev.filegate.core.internal.resource.ResourceLedger;
 import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.resource.ResourceUsage;
-import dev.filegate.core.spi.PrefixInspectionCheck;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -75,7 +75,7 @@ public final class StageStore implements AutoCloseable {
             InputStream source,
             long maxBytes,
             InputClaims claims,
-            java.util.List<PrefixInspectionCheck> prefixChecks) {
+            java.util.List<BoundPrefixCheck> prefixChecks) {
         var prefix = new CapturePrefix(prefixChecks, claims);
         ResourceLedger.Reservation reservation;
         synchronized (this) {

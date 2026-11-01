@@ -20,6 +20,7 @@
 
 package dev.filegate.core.internal.inspection;
 
+import dev.filegate.core.internal.execution.BoundPrefixCheck;
 import dev.filegate.core.policy.CheckDescriptor;
 import dev.filegate.core.policy.CheckKind;
 import dev.filegate.core.policy.CompiledPolicy;
@@ -33,15 +34,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /** Resolves explicit plugins once; installing a plugin never changes a policy implicitly. */
 public final class CheckRegistry {
-    public record RegisteredCheck(CheckDescriptor descriptor, InspectionCheck implementation) {}
+    public record RegisteredCheck(
+            CheckDescriptor descriptor,
+            InspectionCheck implementation,
+            Optional<BoundPrefixCheck> prefix) {}
 
     public record Plan(
-            CompiledPolicy policy,
-            List<RegisteredCheck> checks,
-            List<PrefixInspectionCheck> prefixes) {
+            CompiledPolicy policy, List<RegisteredCheck> checks, List<BoundPrefixCheck> prefixes) {
         public Plan {
             checks = List.copyOf(checks);
             prefixes = List.copyOf(prefixes);
@@ -55,14 +58,19 @@ public final class CheckRegistry {
         for (InspectionCheck check : checks) {
             Objects.requireNonNull(check, "check");
             CheckDescriptor descriptor = Objects.requireNonNull(check.descriptor(), "descriptor");
-            if (check instanceof PrefixInspectionCheck prefix) {
-                if (descriptor.kind() != CheckKind.PREFLIGHT
-                        || prefix.prefixBytes() < 1
-                        || prefix.prefixBytes() > PrefixInspectionCheck.MAX_PREFIX_BYTES) {
-                    throw new IllegalArgumentException("Invalid bounded prefix capability");
+            Optional<BoundPrefixCheck> prefix = Optional.empty();
+            if (check instanceof PrefixInspectionCheck prefixCheck) {
+                if (descriptor.kind() != CheckKind.PREFLIGHT) {
+                    throw new IllegalArgumentException(
+                            "Prefix checks must declare preflight coverage");
                 }
+                prefix =
+                        Optional.of(
+                                new BoundPrefixCheck(
+                                        descriptor.id(), prefixCheck.prefixBytes(), prefixCheck));
             }
-            if (registered.putIfAbsent(descriptor.id(), new RegisteredCheck(descriptor, check))
+            if (registered.putIfAbsent(
+                            descriptor.id(), new RegisteredCheck(descriptor, check, prefix))
                     != null) {
                 throw new IllegalArgumentException("Duplicate installed check");
             }
@@ -80,7 +88,7 @@ public final class CheckRegistry {
             throw new IllegalArgumentException("Policy input allowance exceeds the stage envelope");
         }
         var checks = new ArrayList<RegisteredCheck>();
-        var prefixes = new ArrayList<PrefixInspectionCheck>();
+        var prefixes = new ArrayList<BoundPrefixCheck>();
         for (CheckDescriptor required : policy.checks()) {
             RegisteredCheck check = installed.get(required.id());
             if (check == null || !required.equals(check.descriptor())) {
@@ -88,8 +96,7 @@ public final class CheckRegistry {
                         "Installed check does not match compiled capability");
             }
             checks.add(check);
-            if (check.implementation() instanceof PrefixInspectionCheck prefix)
-                prefixes.add(prefix);
+            check.prefix().ifPresent(prefixes::add);
         }
         return new Plan(policy, checks, prefixes);
     }
