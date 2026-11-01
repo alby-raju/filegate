@@ -5,7 +5,8 @@ verified release of approved bytes. Optional preparation will produce a separate
 derivative and require its own release checks.
 
 The foundation currently implements immutable policy compilation and fail-closed
-evidence aggregation. Capture, inspection execution, isolation, preparation and
+evidence aggregation, bounded private capture and resource reservations. Inspection
+execution, isolation, preparation and
 verified transfer are not implemented yet. It is not ready to protect uploads.
 
 ## Build

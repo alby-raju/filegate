@@ -18,8 +18,8 @@ claim. No slice may approve content with missing mandatory evidence.
 | --- | --- | --- | --- |
 | R0 | Record this plan and proposal traceability | Review requirements against proposal sections 1–9 | Complete |
 | M0.1 | Immutable policies, explicit versioned checks, three outcomes and immutable evidence | Unknown/missing capabilities rejected; canonical fingerprints stable; missing/duplicate/foreign evidence blocks; rejection precedence | Complete |
-| M0.2 | Atomic resource admission and private bounded capture | Denial before reading; concurrent quota limits; actual byte counting; exact limit/limit+1; digest; source ownership; I/O and deletion failures | Next |
-| M0.3 | Scoped inspection facade, sequential embedded checks and content leases | Only complete evidence grants a handle; inspector failures incomplete; close blocks new copies; active copies retain storage; no public stage path | Planned |
+| M0.2 | Atomic resource admission and private bounded capture | Denial before reading; concurrent quota limits; actual byte counting; exact limit/limit+1; digest; source ownership; I/O and deletion failures | Complete |
+| M0.3 | Scoped inspection facade, sequential embedded checks and content leases | Only complete evidence grants a handle; inspector failures incomplete; close blocks new copies; active copies retain storage; no public stage path | Next |
 | M0.4 | Verified release, receipt binding and abort-safe local storage example | Tampering, truncated/failed copies, wrong use/destination, abandoned targets, finalization and commit failures; persisted bytes verified | Planned |
 | M0.5 | Integration docs and CI | Executable workflow example; JDK-only packaged runtime; clean build on Java 21; documented host obligations and timeout limits | Planned |
 | M1.1 | Bounded candidate recognition and claim policy | PNG/JPEG/PDF/ZIP candidates, short/truncated/unknown input, spoofed claims; signatures never substitute for required structure checks | Planned |
@@ -76,3 +76,9 @@ not completed features.
   rejection precedence. Typed policy input cannot silently ignore unknown keys.
 - Scope update: user requested all offered workflows: PNG/JPEG, PDF/DOCX and mixed
   attachments. Concrete deployment budgets and preparation operations remain open.
+
+- M0.2: `mvn verify` passes 14 tests total. Capture uses private POSIX staging, a
+  fixed buffer, actual byte limits and SHA-256. Quotas reject without reading;
+  concurrent and overflow-edge reservations stay bounded. Failed deletion retains
+  the charge until explicit retry. Crash recovery/shared-volume enforcement remain
+  M5 gates; this stage store requires a POSIX filesystem.
