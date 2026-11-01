@@ -47,6 +47,9 @@ public final class CompiledPolicy {
             }
             resolved.add(descriptor);
         }
+        if (resolved.stream().noneMatch(check -> check.kind() == CheckKind.CONTENT)) {
+            throw new IllegalArgumentException("Preflight cannot replace mandatory content inspection");
+        }
         return new CompiledPolicy(spec, resolved);
     }
 
@@ -62,7 +65,7 @@ public final class CompiledPolicy {
             var bytes = new ByteArrayOutputStream();
             try (var output = new DataOutputStream(bytes)) {
                 // Versioned, length-delimited canonical encoding, independent of locale and map order.
-                output.writeUTF("filegate-policy-v1");
+                output.writeUTF("filegate-policy-v2");
                 output.writeUTF(spec.name());
                 output.writeUTF(spec.use().name());
                 output.writeLong(spec.maxInputBytes());
@@ -73,6 +76,7 @@ public final class CompiledPolicy {
                     output.writeUTF(check.version());
                     output.writeUTF(check.coverageProfile());
                     output.writeUTF(check.executionMode().name());
+                    output.writeUTF(check.kind().name());
                 }
             }
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray()));

@@ -22,8 +22,8 @@ claim. No slice may approve content with missing mandatory evidence.
 | M0.3 | Scoped inspection facade, sequential embedded checks and content leases | Only complete evidence grants a handle; inspector failures incomplete; close blocks new copies; active copies retain storage; no public stage path | Complete |
 | M0.4 | Verified release, receipt binding and abort-safe local storage example | Tampering, truncated/failed copies, wrong use/destination, abandoned targets, finalization and commit failures; persisted bytes verified | Complete |
 | M0.5 | Integration docs and CI | Executable workflow example; JDK-only packaged runtime; clean build on Java 21; documented host obligations and timeout limits | Complete |
-| M1.1 | Bounded candidate recognition and claim policy | PNG/JPEG/PDF/ZIP candidates, short/truncated/unknown input, spoofed claims; signatures never substitute for required structure checks | Next |
-| M1.2 | Preflight integration and corpus | Capture-time envelope rejection, `NOT_RUN` evidence for skipped checks, ambiguous candidates; no format approval until supported inspectors exist | Planned |
+| M1.1 | Bounded candidate recognition and claim policy | PNG/JPEG/PDF/ZIP candidates, short/truncated/unknown input, spoofed claims; signatures never substitute for required structure checks | Complete |
+| M1.2 | Preflight integration and corpus | Capture-time envelope rejection, `NOT_RUN` evidence for skipped checks, ambiguous candidates; no format approval until supported inspectors exist | Next |
 | M2.1 | Worker artifact and bounded protocol | Frame/evidence/stderr limits; request/digest/policy/build binding; stale, missing, duplicate and malformed responses block | Planned |
 | M2.2 | Fixed worker pool and lifecycle | One task per worker; bounded wait; crash/timeout termination; cancellation; restart backoff and saturation tests | Planned |
 | M2.3 | Supported Linux containment | Non-root, read-only code/input, no credentials/network, bounded memory/CPU/process/scratch; deployment-level escape and kill tests; no embedded fallback | Requires Linux validation environment |
@@ -101,3 +101,8 @@ not completed features.
   CI added for Linux/macOS Java 21; remote results are pending the next push.
   M0 foundation is implemented; crash/volume recovery and real storage adapter
   qualification remain explicit M3/M5 gates.
+
+- M1.1: `mvn verify` passes 36 tests. Offset-zero bounded recognition distinguishes
+  PNG/JPEG/PDF/ZIP candidates only. ZIP claims do not establish DOCX/XLSX package
+  type. Claim rules are fingerprint-bound, and preflight-only policies fail
+  compilation. Adding capability kinds versions the canonical policy encoding.
