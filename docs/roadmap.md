@@ -132,3 +132,8 @@ not completed features.
   two actual-container tests by design. Linux CI now builds a digest-bound fixture
   and must pass those tests before containment is recorded as validated. See
   [worker deployment limits](linux-workers.md).
+
+- Worker lifecycle fix: a deterministic EOF-before-exit fixture now verifies
+  crash classification after waiting for natural process exit. The full native
+  suite passes 55 tests with two Linux-container tests skipped on macOS. Container
+  restart backoff is applied before creation as well as before attached execution.

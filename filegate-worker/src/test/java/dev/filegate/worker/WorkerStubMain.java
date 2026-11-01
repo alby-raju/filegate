@@ -25,6 +25,11 @@ public final class WorkerStubMain {
         }
         switch (args[0]) {
             case "crash" -> System.exit(7);
+            case "eof-crash" -> {
+                System.out.close();
+                Thread.sleep(50);
+                System.exit(7);
+            }
             case "hang", "sandbox-hang" -> Thread.sleep(60_000);
             case "stderr" -> {
                 System.err.write(new byte[2048]);

@@ -1,6 +1,7 @@
 package dev.filegate.worker;
 
 import java.io.IOException;
+import java.io.EOFException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
@@ -119,9 +120,20 @@ public final class WorkerPool implements AutoCloseable {
             Thread.currentThread().interrupt();
             failure = WorkerFailure.CANCELLED;
         } catch (ExecutionException invalid) {
-            failure = stderrExceeded.get() ? WorkerFailure.STDERR_LIMIT
-                    : process != null && !process.isAlive() && process.exitValue() != 0
-                    ? WorkerFailure.CRASH : WorkerFailure.PROTOCOL;
+            failure = stderrExceeded.get() ? WorkerFailure.STDERR_LIMIT : WorkerFailure.PROTOCOL;
+            if (!stderrExceeded.get() && process != null && invalid.getCause() instanceof EOFException) {
+                try {
+                    // Pipe EOF may precede the Process exit notification. Observe natural exit
+                    // before cleanup so our own kill cannot be misclassified as a worker crash.
+                    if (process.waitFor(Math.min(remaining(started), limits.terminationGrace().toNanos()), TimeUnit.NANOSECONDS)
+                            && process.exitValue() != 0) failure = WorkerFailure.CRASH;
+                } catch (TimeoutException timeout) {
+                    failure = WorkerFailure.TIMEOUT;
+                } catch (InterruptedException cancelled) {
+                    Thread.currentThread().interrupt();
+                    failure = WorkerFailure.CANCELLED;
+                }
+            }
         } catch (IOException unavailable) {
             failure = WorkerFailure.LAUNCH_FAILED;
         } catch (RuntimeException unavailable) {

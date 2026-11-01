@@ -24,6 +24,8 @@ public final class LinuxContainerRuntime implements AutoCloseable {
     private final Set<String> active = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final Duration controlTimeout;
+    private final Duration failureBackoff;
+    private volatile long lastFailureNanos;
 
     private LinuxContainerRuntime(Path parent, ContainerSpec spec, WorkerLimits workers) throws IOException {
         if (!System.getProperty("os.name").equals("Linux") || !Files.isExecutable(spec.dockerBinary())) {
@@ -31,6 +33,7 @@ public final class LinuxContainerRuntime implements AutoCloseable {
         }
         this.spec = spec;
         this.controlTimeout = workers.taskTimeout();
+        this.failureBackoff = workers.failureBackoff();
         config = Files.createTempDirectory(parent, "filegate-docker-",
                 PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
         pool = new WorkerPool(workers);
@@ -58,6 +61,9 @@ public final class LinuxContainerRuntime implements AutoCloseable {
     /** Java arguments must select the validated worker main and its bounded profile, never untrusted metadata. */
     public WorkerRun execute(ProtocolBinding binding, InputStream capturedInput, List<String> javaArgs) {
         if (closed.get()) return new WorkerRun(null, WorkerFailure.CLOSED);
+        if (lastFailureNanos != 0 && System.nanoTime() - lastFailureNanos < failureBackoff.toNanos()) {
+            return new WorkerRun(null, WorkerFailure.BACKOFF);
+        }
         if (!admission.tryAcquire()) return new WorkerRun(null, WorkerFailure.CAPACITY);
         String name = "filegate-task-" + UUID.randomUUID();
         active.add(name);
@@ -87,7 +93,9 @@ public final class LinuxContainerRuntime implements AutoCloseable {
                 cleanControlDirectory();
             }
         }
-        return attempted && !removed ? new WorkerRun(null, WorkerFailure.TERMINATION_FAILED) : run;
+        if (attempted && !removed) run = new WorkerRun(null, WorkerFailure.TERMINATION_FAILED);
+        if (!run.succeeded()) lastFailureNanos = System.nanoTime();
+        return run;
     }
 
     public SandboxLimits limits() { return spec.limits(); }

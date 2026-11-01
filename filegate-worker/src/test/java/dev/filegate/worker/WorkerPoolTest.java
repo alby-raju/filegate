@@ -41,6 +41,7 @@ class WorkerPoolTest {
     @Test void crashesMalformedRepliesAndExtraOutputCannotSucceed() {
         try (var pool = new WorkerPool(limits(Duration.ofSeconds(10), Duration.ZERO))) {
             assertEquals(WorkerFailure.CRASH, pool.execute(binding(), command("crash")).failure());
+            assertEquals(WorkerFailure.CRASH, pool.execute(binding(), command("eof-crash")).failure());
             assertEquals(WorkerFailure.PROTOCOL, pool.execute(binding(), command("bad")).failure());
             assertEquals(WorkerFailure.PROTOCOL, pool.execute(binding(), command("trailing")).failure());
             assertEquals(0, pool.activeProcesses());
