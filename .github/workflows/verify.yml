@@ -35,13 +35,17 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Reject generated files in Git
+        run: scripts/check-repository.sh
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
       - name: Build and run failure tests
-        run: mvn -B -ntp verify
+        run: scripts/ci-verify.sh verify
       - name: Verify JDK-only core runtime
         shell: bash
         run: test "$(jdeps --print-module-deps filegate-core/target/filegate-core-0.1.0-SNAPSHOT.jar)" = java.base
@@ -58,4 +62,4 @@ jobs:
         shell: bash
         run: |
           export FILEGATE_DOCKER_IMAGE=$(cat /tmp/filegate-worker-image)
-          mvn -B -ntp verify
+          mvn -o -B -ntp verify

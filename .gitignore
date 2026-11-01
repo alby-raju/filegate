@@ -1,9 +1,17 @@
 # Build output
 **/target/
+**/bin/
+**/out/
+*.class
 
 # Editors and operating systems
 .idea/
 *.iml
+.classpath
+.project
+.settings/
+.factorypath
+.metadata/
 .vscode/
 .DS_Store
 
