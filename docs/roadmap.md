@@ -159,3 +159,10 @@ preparation, storage qualification, security review and adoption evidence.
   comment/metadata change. All 65 Java bodies match the previous commit exactly;
   header/XML/link checks pass and all four JARs contain byte-for-byte root LICENSE
   and NOTICE copies. No feature implementation was resumed.
+
+- Architecture cleanup 1: core contracts now use capability packages, while
+  capture, resource and capability implementations are not exported. Sealed public
+  handles preserve issuance control. Shared test fixtures replace test-class
+  coupling. The migrated reactor passes 63 native tests; two Linux-only tests are
+  skipped locally. External client compilation verifies module encapsulation,
+  and `jdeps` still reports `java.base` only.

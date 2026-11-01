@@ -20,7 +20,7 @@
 
 package dev.filegate.formats.images;
 
-import dev.filegate.core.CheckStatus;
+import dev.filegate.core.inspection.CheckStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

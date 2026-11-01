@@ -20,8 +20,8 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.ArtifactIdentity;
-import dev.filegate.core.PolicySpec;
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.policy.PolicySpec;
 
 import java.util.List;
 import java.util.Objects;

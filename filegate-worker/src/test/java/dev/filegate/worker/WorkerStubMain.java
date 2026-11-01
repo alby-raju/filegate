@@ -20,7 +20,7 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.CheckEvidence;
+import dev.filegate.core.inspection.CheckEvidence;
 
 /** Transport fault fixture only. It does not inspect content. */
 public final class WorkerStubMain {

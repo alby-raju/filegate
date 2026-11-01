@@ -18,10 +18,13 @@
  * limitations under the License.
  */
 
-/**
- * FileGate's JDK-only core boundary. Public packages will be exported as the
- * inspection and release contracts are implemented.
- */
+/** Framework-independent FileGate contracts; implementation packages are deliberately not exported. */
 module dev.filegate.core {
     exports dev.filegate.core;
+    exports dev.filegate.core.policy;
+    exports dev.filegate.core.inspection;
+    exports dev.filegate.core.spi;
+    exports dev.filegate.core.content;
+    exports dev.filegate.core.resource;
+    exports dev.filegate.core.preflight;
 }

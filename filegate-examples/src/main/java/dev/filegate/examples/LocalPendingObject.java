@@ -20,8 +20,8 @@
 
 package dev.filegate.examples;
 
-import dev.filegate.core.TransferReceipt;
-import dev.filegate.core.Use;
+import dev.filegate.core.content.TransferReceipt;
+import dev.filegate.core.policy.Use;
 
 import java.io.IOException;
 import java.io.OutputStream;

@@ -20,7 +20,12 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.*;
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.inspection.CheckStatus;
+import dev.filegate.core.inspection.ReasonCode;
+import dev.filegate.core.policy.PolicySpec;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;

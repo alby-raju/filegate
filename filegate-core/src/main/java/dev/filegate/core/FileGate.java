@@ -20,6 +20,27 @@
 
 package dev.filegate.core;
 
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.inspection.CheckStatus;
+import dev.filegate.core.inspection.InputClaims;
+import dev.filegate.core.inspection.Inspection;
+import dev.filegate.core.inspection.InspectionReport;
+import dev.filegate.core.inspection.ReasonCode;
+import dev.filegate.core.inspection.Verdict;
+import dev.filegate.core.internal.capture.CapturedArtifact;
+import dev.filegate.core.internal.capture.StageStore;
+import dev.filegate.core.internal.inspection.ApprovedInspection;
+import dev.filegate.core.internal.inspection.BlockedInspection;
+import dev.filegate.core.internal.inspection.EvidenceAggregator;
+import dev.filegate.core.internal.inspection.ScopedInspectionInput;
+import dev.filegate.core.policy.CheckDescriptor;
+import dev.filegate.core.policy.CompiledPolicy;
+import dev.filegate.core.policy.ExecutionMode;
+import dev.filegate.core.preflight.PreflightCheck;
+import dev.filegate.core.resource.ResourceLimits;
+import dev.filegate.core.resource.ResourceUsage;
+import dev.filegate.core.spi.InspectionCheck;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -74,7 +95,7 @@ public final class FileGate implements AutoCloseable {
                 .filter(PreflightCheck.class::isInstance).map(PreflightCheck.class::cast).findFirst().orElse(null);
         var capture = stages.capture(source, snapshot.maxInputBytes(), claims, preflight);
         if (capture.failure() != null) {
-            return new Blocked(EvidenceAggregator.aggregate(snapshot,
+            return new BlockedInspection(EvidenceAggregator.aggregate(snapshot,
                     capture.preflightEvidence() == null ? List.of() : List.of(capture.preflightEvidence()),
                     List.of(capture.failure())));
         }
@@ -88,7 +109,7 @@ public final class FileGate implements AutoCloseable {
                     continue;
                 }
                 CheckEvidence result;
-                try (var input = new InspectionInput(artifact, claims)) {
+                try (var input = new ScopedInspectionInput(artifact, claims)) {
                     if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
                     result = checks.get(descriptor.id()).inspect(input);
                 } catch (InterruptedException interrupted) {
@@ -103,13 +124,13 @@ public final class FileGate implements AutoCloseable {
                 }
             }
             InspectionReport report = EvidenceAggregator.aggregate(snapshot, evidence, List.of())
-                    .withArtifact(artifact.identity);
+                    .withArtifact(artifact.identity());
             if (report.verdict() == Verdict.APPROVED) {
-                var approved = new Approved(report, artifact, limits.captureBufferBytes());
+                var approved = new ApprovedInspection(report, artifact, limits.captureBufferBytes());
                 transferred = true;
                 return approved;
             }
-            return new Blocked(report);
+            return new BlockedInspection(report);
         } finally {
             if (!transferred) artifact.close();
         }
@@ -124,7 +145,7 @@ public final class FileGate implements AutoCloseable {
             inspection = inspect(input, claims);
         } catch (IOException failure) {
             if (inspection != null) inspection.close();
-            return new Blocked(EvidenceAggregator.aggregate(policy.get(), List.of(), List.of(ReasonCode.CAPTURE_FAILED)));
+            return new BlockedInspection(EvidenceAggregator.aggregate(policy.get(), List.of(), List.of(ReasonCode.CAPTURE_FAILED)));
         }
         return inspection;
     }

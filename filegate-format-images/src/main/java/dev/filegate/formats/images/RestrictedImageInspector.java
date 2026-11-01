@@ -20,9 +20,9 @@
 
 package dev.filegate.formats.images;
 
-import dev.filegate.core.CheckEvidence;
-import dev.filegate.core.CheckStatus;
-import dev.filegate.core.ReasonCode;
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.inspection.CheckStatus;
+import dev.filegate.core.inspection.ReasonCode;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;

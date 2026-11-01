@@ -20,7 +20,7 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.ArtifactIdentity;
+import dev.filegate.core.content.ArtifactIdentity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;

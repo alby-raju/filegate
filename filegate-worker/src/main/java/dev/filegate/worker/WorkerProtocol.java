@@ -20,11 +20,11 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.ArtifactIdentity;
-import dev.filegate.core.CheckEvidence;
-import dev.filegate.core.CheckStatus;
-import dev.filegate.core.PolicySpec;
-import dev.filegate.core.ReasonCode;
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.inspection.CheckStatus;
+import dev.filegate.core.policy.PolicySpec;
+import dev.filegate.core.inspection.ReasonCode;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

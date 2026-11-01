@@ -20,8 +20,8 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.CheckEvidence;
-import dev.filegate.core.PolicySpec;
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.policy.PolicySpec;
 
 import java.io.IOException;
 import java.util.HashSet;

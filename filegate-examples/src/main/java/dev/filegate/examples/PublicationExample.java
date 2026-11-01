@@ -20,7 +20,7 @@
 
 package dev.filegate.examples;
 
-import dev.filegate.core.ApprovedContent;
+import dev.filegate.core.content.ApprovedContent;
 
 import java.io.IOException;
 import java.nio.file.Path;
