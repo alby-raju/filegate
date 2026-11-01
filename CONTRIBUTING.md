@@ -8,14 +8,15 @@ and [roadmap](docs/roadmap.md) before changing acceptance or lifecycle behavior.
 Use JDK 21 and Maven 3.9 or newer.
 
 ```sh
-mvn spotless:apply
 mvn clean verify
 scripts/check-repository.sh
 ```
 
-The parent POM pins the formatter, build plugins and shared JUnit version. Java
-uses AOSP formatting with four-space indentation. Formatting is checked during
-`verify`. Tests requiring Linux containers run in Linux CI; they are skipped on a
+The parent POM pins build plugins and the shared JUnit version. Preserve the
+existing Eclipse formatting, including tabs and import grouping. The incompatible
+Google Java Format check has been removed. A shared Eclipse formatter profile
+must be exported from the IDE before automated formatting is reintroduced.
+Tests requiring Linux containers run in Linux CI; they are skipped on a
 native environment without the explicitly configured fixture image.
 
 ## Code boundaries
@@ -64,7 +65,8 @@ stale: use `git status --short` to inspect the actual index.
 The main branch requires a pull request, owner review, resolved conversations and
 successful Linux/macOS verification. Administrators have an explicit bypass for
 repository maintenance. Use normal pull requests for routine work and reserve the
-bypass for deliberate maintenance. See [the security policy](SECURITY.md) for
+bypass for deliberate maintenance. The [repository security configuration](docs/repository-security.md)
+documents the active controls and the versioned ruleset. See [the security policy](SECURITY.md) for
 private vulnerability reporting. Dependabot proposes Maven and Actions updates;
 updates still pass the same review and verification gates.
 

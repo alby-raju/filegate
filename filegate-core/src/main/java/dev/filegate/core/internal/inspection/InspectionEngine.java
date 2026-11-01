@@ -74,12 +74,17 @@ public final class InspectionEngine implements AutoCloseable {
 		try (var input = Files.newInputStream(source)) {
 			result = inspect(plan, input, claims);
 		} catch (IOException failure) {
-			if (result != null)
-				result.close();
+			closeInspection(result);
 			return new BlockedInspection(
 					EvidenceAggregator.aggregate(plan.policy(), List.of(), List.of(ReasonCode.CAPTURE_FAILED)));
 		}
 		return result;
+	}
+
+	// A source-close failure can occur after an approved handle has been issued.
+	private static void closeInspection(Inspection inspection) {
+		if (inspection != null)
+			inspection.close();
 	}
 
 	public ResourceUsage resourceUsage() {

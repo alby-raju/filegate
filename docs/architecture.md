@@ -130,5 +130,6 @@ or `WorkerRun.Failed` to access its typed payload.
 Tests use dedicated fixtures rather than helpers on other test classes. Real
 consumer compilation checks exported contracts and rejection of internal imports.
 Existing capture, quota, lease, transfer, worker, containment and format tests
-remain the behavioral evidence. `mvn verify` also checks the pinned Java format;
-`mvn spotless:apply` applies it locally.
+remain the behavioral evidence. Preserve the existing Eclipse formatting. The
+incompatible Google Java Format check is removed; automated formatting awaits a
+shared exported Eclipse profile.
