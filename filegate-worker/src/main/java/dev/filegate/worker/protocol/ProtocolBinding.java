@@ -18,14 +18,13 @@
  * limitations under the License.
  */
 
-package dev.filegate.worker;
+package dev.filegate.worker.protocol;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.policy.PolicySpec;
 
 /** Every response must match all fields, including the exact expected check set. */
 public record ProtocolBinding(UUID requestId, ArtifactIdentity artifact, String policyFingerprint,
@@ -37,7 +36,7 @@ public record ProtocolBinding(UUID requestId, ArtifactIdentity artifact, String 
             throw new IllegalArgumentException("Invalid policy fingerprint");
         }
         token(inspectorBuild);
-        if (expectedChecks.isEmpty() || expectedChecks.size() > PolicySpec.MAX_CHECKS) {
+        if (expectedChecks.isEmpty() || expectedChecks.size() > WorkerProtocol.MAX_CHECKS) {
             throw new IllegalArgumentException("Invalid expected check count");
         }
         expectedChecks = expectedChecks.stream().map(ProtocolBinding::token).sorted().toList();

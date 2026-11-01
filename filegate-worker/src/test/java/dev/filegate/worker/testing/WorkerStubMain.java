@@ -18,9 +18,13 @@
  * limitations under the License.
  */
 
-package dev.filegate.worker;
+package dev.filegate.worker.testing;
 
 import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.worker.linux.LinuxContainmentProbe;
+import dev.filegate.worker.linux.SandboxLimits;
+import dev.filegate.worker.protocol.WorkerProtocol;
+import dev.filegate.worker.protocol.WorkerResponse;
 
 /** Transport fault fixture only. It does not inspect content. */
 public final class WorkerStubMain {

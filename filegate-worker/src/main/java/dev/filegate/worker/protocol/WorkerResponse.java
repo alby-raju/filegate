@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package dev.filegate.worker;
+package dev.filegate.worker.protocol;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -26,12 +26,11 @@ import java.util.List;
 import java.util.Objects;
 
 import dev.filegate.core.inspection.CheckEvidence;
-import dev.filegate.core.policy.PolicySpec;
 
 public record WorkerResponse(ProtocolBinding binding, List<CheckEvidence> evidence) {
     public WorkerResponse {
         Objects.requireNonNull(binding, "binding");
-        if (evidence.size() > PolicySpec.MAX_CHECKS) throw new IllegalArgumentException("Too many findings");
+        if (evidence.size() > WorkerProtocol.MAX_CHECKS) throw new IllegalArgumentException("Too many findings");
         evidence = List.copyOf(evidence);
     }
 

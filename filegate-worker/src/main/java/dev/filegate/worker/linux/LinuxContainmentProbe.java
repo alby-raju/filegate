@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package dev.filegate.worker;
+package dev.filegate.worker.linux;
 
 import java.io.IOException;
 import java.net.NetworkInterface;

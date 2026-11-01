@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package dev.filegate.worker;
+package dev.filegate.worker.protocol;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,10 +35,10 @@ import dev.filegate.core.content.ArtifactIdentity;
 import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.inspection.CheckStatus;
 import dev.filegate.core.inspection.ReasonCode;
-import dev.filegate.core.policy.PolicySpec;
 
 /** Versioned bounded binary frames. Never accepts Java object serialization or free-form diagnostics. */
 public final class WorkerProtocol {
+    public static final int MAX_CHECKS = 64;
     public static final int MAX_FRAME_BYTES = 32 * 1024;
     private static final int MAGIC_V1 = 0x46470101;
     private static final int REQUEST = 1;
@@ -131,7 +131,7 @@ public final class WorkerProtocol {
     }
 
     private static int boundedCount(int count) throws IOException {
-        if (count < 0 || count > PolicySpec.MAX_CHECKS) throw new IOException("Invalid check count");
+        if (count < 0 || count > WorkerProtocol.MAX_CHECKS) throw new IOException("Invalid check count");
         return count;
     }
 

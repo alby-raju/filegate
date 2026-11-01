@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package dev.filegate.worker;
+package dev.filegate.worker.process;
 
 import java.time.Duration;
 

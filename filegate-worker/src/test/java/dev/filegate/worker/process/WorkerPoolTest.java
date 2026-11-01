@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package dev.filegate.worker;
+package dev.filegate.worker.process;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -30,7 +30,10 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.worker.protocol.ProtocolBinding;
+import dev.filegate.worker.testing.WorkerStubMain;
 
+import static dev.filegate.worker.testing.WorkerFixtures.failure;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WorkerPoolTest {
@@ -52,7 +55,7 @@ class WorkerPoolTest {
         try (var pool = new WorkerPool(limits(Duration.ofSeconds(10), Duration.ZERO))) {
             for (int i = 0; i < 2; i++) {
                 var result = pool.execute(binding(), command("pass"));
-                assertTrue(result.succeeded(), () -> "Failure: " + result.failure());
+                assertTrue(result.succeeded(), () -> "Failure: " + failure(result));
                 assertEquals(0, pool.activeTasks());
                 assertEquals(0, pool.activeProcesses());
             }
@@ -61,26 +64,26 @@ class WorkerPoolTest {
 
     @Test void crashesMalformedRepliesAndExtraOutputCannotSucceed() {
         try (var pool = new WorkerPool(limits(Duration.ofSeconds(10), Duration.ZERO))) {
-            assertEquals(WorkerFailure.CRASH, pool.execute(binding(), command("crash")).failure());
-            assertEquals(WorkerFailure.CRASH, pool.execute(binding(), command("eof-crash")).failure());
-            assertEquals(WorkerFailure.PROTOCOL, pool.execute(binding(), command("bad")).failure());
-            assertEquals(WorkerFailure.PROTOCOL, pool.execute(binding(), command("trailing")).failure());
+            assertEquals(WorkerFailure.CRASH, failure(pool.execute(binding(), command("crash"))));
+            assertEquals(WorkerFailure.CRASH, failure(pool.execute(binding(), command("eof-crash"))));
+            assertEquals(WorkerFailure.PROTOCOL, failure(pool.execute(binding(), command("bad"))));
+            assertEquals(WorkerFailure.PROTOCOL, failure(pool.execute(binding(), command("trailing"))));
             assertEquals(0, pool.activeProcesses());
         }
     }
 
     @Test void deadlineKillsHangAndLateReplyCannotBeReused() {
         try (var pool = new WorkerPool(limits(Duration.ofSeconds(1), Duration.ZERO))) {
-            assertEquals(WorkerFailure.TIMEOUT, pool.execute(binding(), command("hang")).failure());
+            assertEquals(WorkerFailure.TIMEOUT, failure(pool.execute(binding(), command("hang"))));
             assertEquals(0, pool.activeProcesses());
-            assertEquals(WorkerFailure.TIMEOUT, pool.execute(binding(), command("late-exit")).failure());
+            assertEquals(WorkerFailure.TIMEOUT, failure(pool.execute(binding(), command("late-exit"))));
             assertEquals(0, pool.activeProcesses());
         }
     }
 
     @Test void stderrIsBoundedAndNeverIncludedInResults() {
         try (var pool = new WorkerPool(limits(Duration.ofSeconds(10), Duration.ZERO))) {
-            assertEquals(WorkerFailure.STDERR_LIMIT, pool.execute(binding(), command("stderr")).failure());
+            assertEquals(WorkerFailure.STDERR_LIMIT, failure(pool.execute(binding(), command("stderr"))));
             assertEquals(0, pool.activeProcesses());
         }
     }
@@ -93,23 +96,23 @@ class WorkerPoolTest {
                 long stop = System.nanoTime() + Duration.ofSeconds(5).toNanos();
                 while (pool.activeProcesses() == 0 && System.nanoTime() < stop) Thread.sleep(5);
                 assertEquals(1, pool.activeTasks());
-                assertEquals(WorkerFailure.CAPACITY, pool.execute(binding(), command("pass")).failure());
+                assertEquals(WorkerFailure.CAPACITY, failure(pool.execute(binding(), command("pass"))));
             } finally { pool.close(); }
             assertFalse(work.get(5, TimeUnit.SECONDS).succeeded());
             assertEquals(0, pool.activeProcesses());
-            assertEquals(WorkerFailure.CLOSED, pool.execute(binding(), command("pass")).failure());
+            assertEquals(WorkerFailure.CLOSED, failure(pool.execute(binding(), command("pass"))));
         } finally { pool.close(); }
     }
 
     @Test void backoffBlocksRestartStormsAndCancellationDoesNotLaunch() {
         try (var pool = new WorkerPool(limits(Duration.ofSeconds(10), Duration.ofSeconds(30)))) {
-            assertEquals(WorkerFailure.CRASH, pool.execute(binding(), command("crash")).failure());
-            assertEquals(WorkerFailure.BACKOFF, pool.execute(binding(), command("pass")).failure());
+            assertEquals(WorkerFailure.CRASH, failure(pool.execute(binding(), command("crash"))));
+            assertEquals(WorkerFailure.BACKOFF, failure(pool.execute(binding(), command("pass"))));
         }
         try (var pool = new WorkerPool(limits(Duration.ofSeconds(10), Duration.ZERO))) {
             Thread.currentThread().interrupt();
             try {
-                assertEquals(WorkerFailure.CANCELLED, pool.execute(binding(), command("pass")).failure());
+                assertEquals(WorkerFailure.CANCELLED, failure(pool.execute(binding(), command("pass"))));
                 assertTrue(Thread.currentThread().isInterrupted());
                 assertEquals(0, pool.activeProcesses());
             } finally { Thread.interrupted(); }

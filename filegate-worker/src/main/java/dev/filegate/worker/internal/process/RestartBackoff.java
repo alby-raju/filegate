@@ -18,9 +18,16 @@
  * limitations under the License.
  */
 
-package dev.filegate.worker;
+package dev.filegate.worker.internal.process;
 
-public enum WorkerFailure {
-    CAPACITY, BACKOFF, CLOSED, TIMEOUT, CANCELLED, LAUNCH_FAILED,
-    CRASH, PROTOCOL, STDERR_LIMIT, TERMINATION_FAILED
+import java.time.Duration;
+
+/** Shared restart admission rule for process and container creation. */
+public final class RestartBackoff {
+    private final long delayNanos;
+    private volatile long lastFailure;
+
+    public RestartBackoff(Duration delay) { delayNanos = delay.toNanos(); }
+    public boolean active() { return lastFailure != 0 && System.nanoTime() - lastFailure < delayNanos; }
+    public void recordFailure() { lastFailure = System.nanoTime(); }
 }

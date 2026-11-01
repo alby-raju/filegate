@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package dev.filegate.worker;
+package dev.filegate.worker.linux;
 
 /** Per-worker OS envelope; multiply by concurrent workers when sizing the host. */
 public record SandboxLimits(long memoryBytes, long scratchBytes, int pids, int cpuMillisPerSecond) {

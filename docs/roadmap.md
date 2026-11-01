@@ -174,3 +174,11 @@ preparation, storage qualification, security review and adoption evidence.
   prefix SPI supports independent plugins without concrete preflight dependencies.
   Policy encoding is isolated without changing its format. All 66 native tests
   pass; two Linux-only tests remain intentionally skipped locally.
+
+- Architecture cleanup 3: worker protocol, process supervision and Linux runtime
+  have separate exported packages. Stream exchange, monotonic deadlines, process
+  termination and restart backoff are hidden collaborators; Docker argument
+  construction and daemon control are distinct from container ownership. Worker
+  outcomes are typed, and test fixtures no longer depend on test classes. Shared
+  Maven test configuration and JUnit version are declared once. A clean reactor
+  build passes all 66 native tests; core still requires only `java.base`.
