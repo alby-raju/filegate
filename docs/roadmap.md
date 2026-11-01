@@ -26,8 +26,8 @@ claim. No slice may approve content with missing mandatory evidence.
 | M1.2 | Preflight integration and corpus | Capture-time envelope rejection, `NOT_RUN` evidence for skipped checks, ambiguous candidates; no format approval until supported inspectors exist | Complete |
 | M2.1 | Worker artifact and bounded protocol | Frame/evidence/stderr limits; request/digest/policy/build binding; stale, missing, duplicate and malformed responses block | Complete |
 | M2.2 | Fixed worker pool and lifecycle | One task per worker; bounded wait; crash/timeout termination; cancellation; restart backoff and saturation tests | Complete |
-| M2.3 | Supported Linux containment | Non-root, read-only code/input, no credentials/network, bounded memory/CPU/process/scratch; deployment-level escape and kill tests; no embedded fallback | Implemented; CI validation pending |
-| M2.4 | Restricted PNG/JPEG inspectors | Published encoding/termination/trailing-data/animation/metadata/dimension coverage; bounded isolated decoding if promised; malformed corpus and fuzz regression | After M2.3 |
+| M2.3 | Supported Linux containment | Non-root, read-only code/input, no credentials/network, bounded memory/CPU/process/scratch; deployment-level escape and kill tests; no embedded fallback | Implemented; Linux smoke validated, full security qualification open |
+| M2.4 | Restricted PNG/JPEG inspectors | Published encoding/termination/trailing-data/animation/metadata/dimension coverage; bounded isolated decoding if promised; malformed corpus and fuzz regression | Inspector implemented; isolated integration and broader corpus pending |
 | M3.1 | Freeze one adopter contract | Formats, intended use, AV, budgets, rejection tolerance, storage transaction semantics and representative corpus approved by adopter | Requires pilot decisions |
 | M3.2 | Complete required format coverage | PDF and/or DOCX/XLSX only if required; parser budgets and prohibited feature checks; no raw-keyword safety claims; pinned worker dependencies | After M3.1 |
 | M3.3 | Required AV integration | Scan exact artifact; configured size/coverage limits; outages and uncertain results block; no implicit dependency activation | If pilot requires AV |
@@ -58,13 +58,15 @@ a complete adopter workflow.
 | 8 Coverage, adversarial tests and dependency hygiene | M1–M5 |
 | 9 Adoption decisions and release gates | M3.1, M5.2–M5.3 |
 
-## Current execution boundary
+## Current implementation boundary
 
-Implement the format-independent M0 foundation first, then bounded M1 preflight.
-M2 containment needs a supported Linux validation environment. M3 and M4 need
-adopter decisions; no production limits, formats, AV guarantees or transformation
-operations will be invented from the design. Record limitations as open gates,
-not completed features.
+M0 foundation and M1 bounded preflight are implemented. M2 protocol, task
+supervision and Linux runtime are implemented; the Linux containment smoke test
+passes in CI. The restricted PNG/JPEG inspector has local regression coverage,
+but is not connected to the isolated gate executor yet. Stop at this checkpoint
+for the user-requested repository cleanup and enhancements before starting another
+implementation slice. Remaining M2–M5 work stays open, including PDF/DOCX, optional
+preparation, storage qualification, security review and adoption evidence.
 
 ## Evidence log
 
@@ -137,3 +139,13 @@ not completed features.
   crash classification after waiting for natural process exit. The full native
   suite passes 55 tests with two Linux-container tests skipped on macOS. Container
   restart backoff is applied before creation as well as before attached execution.
+
+- Linux CI: [run 41296517190](https://github.com/alby-raju/filegate/actions/runs/41296517190)
+  passes on commit `22246d3`, including the actual-container restriction probe and
+  timeout cleanup. Full containment qualification remains open.
+- M2.4 inspector checkpoint: `mvn verify` passes 61 native tests, with two Linux-only
+  container tests skipped locally. Restricted PNG/JPEG structure and JDK decoding
+  regressions pass; no isolated-gate integration or production approval is claimed.
+- User requested stopping after the current implementation for repository cleanup
+  and enhancements. This checkpoint records the image inspector without beginning
+  the next isolated integration slice.

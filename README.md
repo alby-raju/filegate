@@ -7,9 +7,10 @@ derivative and require its own release checks.
 The foundation implements policy compilation, bounded private capture, sequential
 trusted embedded checks, immutable reports and scoped approved-content handles.
 Verified transfers bind receipts to destination IDs and uses; the host example
-checks persisted bytes before publication. Isolation and preparation are still
-under development. No
-production format profiles are installed; it is not ready to protect uploads.
+checks persisted bytes before publication. A separate Linux container runtime and
+restricted image inspector are implemented, with their integration still pending.
+No production format profiles are installed in the gate; it is not ready to
+protect uploads. PDF/DOCX inspection and optional preparation remain planned.
 
 ## Build
 
@@ -19,10 +20,10 @@ Requirements: JDK 21 and Maven 3.9 or later.
 mvn verify
 ```
 
-The reactor contains `filegate-core` and a separate `filegate-examples` host
-adapter. Core requires only `java.base`; JUnit is test-only. Tests exercise policy,
-capture, resource and publication failures. No production format coverage is
-claimed. CI builds on Linux and macOS with Java 21.
+Core requires only `java.base`; JUnit is test-only. Separate artifacts contain the
+worker runtime, restricted images and a host publication example. Tests exercise
+policy, capture, resource, worker, image and publication failures. CI builds on
+Linux and macOS with Java 21, and Linux runs actual container restriction tests.
 
 See the [integration guide](docs/integration.md) for API use, ownership, deployment
 limits and host publication obligations.
@@ -35,6 +36,8 @@ limits and host publication obligations.
   unchanged source; its filename identifies v0.4.
 - [Implementation roadmap](docs/roadmap.md): milestones and the first development slice.
 - [Initial decisions](docs/decisions/0001-repository-foundation.md): build and module choices.
+- [Linux workers](docs/linux-workers.md): deployment restrictions and containment evidence.
+- [Image coverage](docs/image-profile.md): supported subset, limits and remaining integration work.
 
 The proposal is design input, not evidence that the described guarantees exist.
 
@@ -54,12 +57,14 @@ The proposal is design input, not evidence that the described guarantees exist.
 
 ```text
 filegate-core/    JDK-only policy, capture, inspection and verified transfer
+filegate-worker/  Bounded protocol, process supervision and Linux container runtime
+filegate-format-images/ Restricted PNG/JPEG inspector; worker integration pending
 filegate-examples/ POSIX host publication example
 docs/design/     Original proposal and text transcription
 docs/decisions/  Recorded implementation decisions
 docs/roadmap.md  Work sequence and acceptance evidence
 ```
 
-Worker, format and preparation artifacts will be added when their implementation
+Document format and preparation artifacts will be added as their implementation
 begins. The provisional Maven coordinates are `dev.filegate:*:0.1.0-SNAPSHOT`;
 publication coordinates and licensing must be settled before distribution.

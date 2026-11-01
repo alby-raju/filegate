@@ -14,6 +14,7 @@
   <modules>
     <module>filegate-core</module>
     <module>filegate-worker</module>
+    <module>filegate-format-images</module>
     <module>filegate-examples</module>
   </modules>
 
