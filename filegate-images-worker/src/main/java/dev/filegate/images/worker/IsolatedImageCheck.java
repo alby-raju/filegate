@@ -19,13 +19,13 @@
  */
 package dev.filegate.images.worker;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.HexFormat;
 
 import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.inspection.CheckStatus;

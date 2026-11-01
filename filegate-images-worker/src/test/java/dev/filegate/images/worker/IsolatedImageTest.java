@@ -19,14 +19,18 @@
  */
 package dev.filegate.images.worker;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
-import java.io.ByteArrayOutputStream;
-import java.awt.image.BufferedImage;
+
 import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
@@ -34,11 +38,19 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
 
 import dev.filegate.core.FileGate;
-import dev.filegate.core.inspection.*;
-import dev.filegate.core.policy.*;
+import dev.filegate.core.inspection.Approved;
+import dev.filegate.core.inspection.Blocked;
+import dev.filegate.core.inspection.InputClaims;
+import dev.filegate.core.inspection.Verdict;
+import dev.filegate.core.policy.CompiledPolicy;
+import dev.filegate.core.policy.ExecutionMode;
+import dev.filegate.core.policy.PolicySpec;
+import dev.filegate.core.policy.Use;
 import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.formats.images.ImageProfile;
-import dev.filegate.worker.linux.*;
+import dev.filegate.worker.linux.ContainerSpec;
+import dev.filegate.worker.linux.LinuxContainerRuntime;
+import dev.filegate.worker.linux.SandboxLimits;
 import dev.filegate.worker.process.WorkerLimits;
 
 class IsolatedImageTest {

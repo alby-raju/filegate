@@ -11,14 +11,16 @@ and cleanup. Optional format code does not enter the core runtime.
 flowchart BT
     Worker["filegate-worker"] --> Core["filegate-core · java.base"]
     Images["filegate-format-images · java.desktop"] --> Core
+    ImageWorker["filegate-images-worker"] --> Worker
+    ImageWorker --> Images
     Examples["filegate-examples"] --> Core
 ```
 
 Core is framework-independent and has no third-party runtime dependency. Worker
 and image artifacts are independently installable. The image parser artifact has
-no dependency on process supervision; the eventual worker integration will
-assemble those capabilities explicitly. Examples implement host-owned persistence.
-JUnit and the formatter are build/test dependencies only.
+no dependency on process supervision. The image-worker adapter assembles those
+capabilities explicitly. Examples implement host-owned persistence and depend on
+the image worker only for integration tests. JUnit is a test dependency.
 
 ## Public core packages
 
@@ -27,7 +29,7 @@ JUnit and the formatter are build/test dependencies only.
 | root | Gate construction, policy replacement and lifecycle delegation | `FileGate` |
 | `policy` | Immutable acceptance definitions and resolved capability identity | `PolicySpec`, `CompiledPolicy`, `CheckDescriptor`, `Use`, `ExecutionMode` |
 | `inspection` | Outcomes, evidence, reports and untrusted input claims | `Inspection`, `Approved`, `Blocked`, `InspectionReport`, `CheckEvidence`, `InputClaims` |
-| `spi` | Explicitly installed check implementations and scoped input access | `InspectionCheck`, `PrefixInspectionCheck`, `InspectionInput` |
+| `spi` | Explicitly installed check implementations and scoped input access | `InspectionCheck`, `IsolatedInspectionCheck`, `PrefixInspectionCheck`, `InspectionInput` |
 | `content` | Captured identity and verified release contracts | `ArtifactIdentity`, `ApprovedContent`, `TransferReceipt`, `TransferException` |
 | `resource` | Per-domain resource configuration and aggregate usage | `ResourceLimits`, `ResourceUsage` |
 | `preflight` | Bounded candidate recognition and claim consistency | `PreflightCheck`, `PreflightRules`, `CandidateRecognition` |

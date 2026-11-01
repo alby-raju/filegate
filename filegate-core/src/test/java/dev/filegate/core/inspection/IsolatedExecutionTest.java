@@ -19,7 +19,8 @@
  */
 package dev.filegate.core.inspection;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
@@ -30,9 +31,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import dev.filegate.core.FileGate;
-import dev.filegate.core.policy.*;
+import dev.filegate.core.policy.CheckDescriptor;
+import dev.filegate.core.policy.CompiledPolicy;
+import dev.filegate.core.policy.ExecutionMode;
+import dev.filegate.core.policy.PolicySpec;
+import dev.filegate.core.policy.Use;
 import dev.filegate.core.resource.ResourceLimits;
-import dev.filegate.core.spi.*;
+import dev.filegate.core.spi.InspectionInput;
+import dev.filegate.core.spi.IsolatedInspectionCheck;
 
 class IsolatedExecutionTest {
 	@TempDir
@@ -43,7 +49,9 @@ class IsolatedExecutionTest {
 		var seen = new AtomicReference<CompiledPolicy>();
 		var descriptor = new CheckDescriptor("isolated", "v1", "test-only", ExecutionMode.ISOLATED);
 		var adapter = new IsolatedInspectionCheck() {
-			public CheckDescriptor descriptor() { return descriptor; }
+			public CheckDescriptor descriptor() {
+				return descriptor;
+			}
 			public CheckEvidence inspect(InspectionInput input, CompiledPolicy policy) {
 				seen.set(policy);
 				return new CheckEvidence("isolated", CheckStatus.ERROR, ReasonCode.CHECK_ERROR);

@@ -23,9 +23,9 @@ import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.policy.CheckDescriptor;
 
 /**
- * Explicitly trusted embedded check. Metadata is bound at gate construction.
+ * Explicitly installed host check. Metadata is bound at gate construction.
  * Implementations may serve concurrent files and must be thread-safe. Deep
- * hostile-file parsers require isolated workers.
+ * hostile-file parsers require isolated workers through IsolatedInspectionCheck.
  */
 public interface InspectionCheck {
 	CheckDescriptor descriptor();

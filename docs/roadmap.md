@@ -28,7 +28,7 @@ claim. No slice may approve content with missing mandatory evidence.
 | M2.2 | Fixed worker pool and lifecycle | One task per worker; bounded wait; crash/timeout termination; cancellation; restart backoff and saturation tests | Complete |
 | M2.3 | Supported Linux containment | Non-root, read-only code/input, no credentials/network, bounded memory/CPU/process/scratch; deployment-level escape and kill tests; no embedded fallback | Implemented; Linux smoke validated, full security qualification open |
 | M2.4 | Restricted PNG/JPEG inspectors | Published encoding/termination/trailing-data/animation/metadata/dimension coverage; bounded isolated decoding if promised; malformed corpus and fuzz regression | Inspector and isolated adapter implemented; broader corpus and qualification pending |
-| M3.1 | Freeze one adopter contract | Formats, intended use, AV, budgets, rejection tolerance, storage transaction semantics and representative corpus approved by adopter | Requires pilot decisions |
+| M3.1 | Freeze one adopter contract | Formats, intended use, AV, budgets, rejection tolerance, storage transaction semantics and representative corpus approved by adopter | Deployment target selected; budgets, use and corpus pending |
 | M3.2 | Complete required format coverage | PDF and/or DOCX/XLSX only if required; parser budgets and prohibited feature checks; no raw-keyword safety claims; pinned worker dependencies | After M3.1 |
 | M3.3 | Required AV integration | Scan exact artifact; configured size/coverage limits; outages and uncertain results block; no implicit dependency activation | If pilot requires AV |
 | M3.4 | End-to-end host integration | Authorization and upload limits before spooling; private pending writes; immutable stored object identity; abort and ambiguous-commit recovery | Requires storage adapter contract |
@@ -218,3 +218,11 @@ preparation, storage qualification, security review and adoption evidence.
   three actual-container tests are skipped locally and required in Linux CI.
   This deterministic corpus is not a substitute for coverage-guided fuzzing or
   independent security review.
+
+- Adopter direction: user selected local POSIX storage, inspection only, with AV
+  optional. Recorded decided and outstanding requirements in adopter-contract.md;
+  M3.1 is not marked complete without use, budgets and representative corpus.
+- Local publication integration now composes the isolated image gate with the
+  existing verified POSIX pending-object example. The Linux-only test verifies
+  exact persisted PNG/JPEG bytes, no publication for blocked input and survival of
+  committed objects after gate/runtime close. Native builds skip this test.
