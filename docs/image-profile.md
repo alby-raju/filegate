@@ -53,8 +53,9 @@ or I/O failures produce incomplete evidence. There is no antivirus, authenticity
 confidentiality-removal or arbitrary-viewer guarantee. Parser compromise remains
 possible; successful local tests do not establish containment or release readiness.
 
-Six regression tests cover generated RGB/RGBA PNG and baseline JPEG, PNG CRC and
+Eight regression tests cover generated RGB/RGBA PNG and baseline JPEG, PNG CRC and
 zlib postconditions, truncation/trailing data, animation/unsupported metadata,
-progressive JPEG and explicit resource ceilings. The broader adversarial corpus,
+progressive JPEG, explicit resource ceilings, every truncated prefix, appended
+payloads and CRC-correct malformed/duplicate headers. The broader adversarial corpus,
 fuzzing and independent review remain roadmap gates. The explicit
 [isolated adapter](isolated-images.md) binds the image digest and profile limits.

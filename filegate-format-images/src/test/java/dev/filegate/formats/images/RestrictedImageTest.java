@@ -20,6 +20,7 @@
 package dev.filegate.formats.images;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -170,4 +171,40 @@ class RestrictedImageTest {
 		assertEquals(CheckStatus.FAIL, inspect(png, new ImageProfile(1024 * 1024, 65536, 1024 * 1024, 4096, 2)));
 		assertEquals(CheckStatus.FAIL, inspect(jpeg, new ImageProfile(1024 * 1024, 65536, 1024 * 1024, 0, 128)));
 	}
+	@Test
+	void everyTruncatedPrefixAndAppendedPayloadBlocksApproval() throws Exception {
+		for (String format : new String[] { "png", "jpeg" }) {
+			byte[] valid = encode(format, false, false);
+			for (int length = 0; length < valid.length; length++) {
+				assertNotEquals(CheckStatus.PASS, inspect(Arrays.copyOf(valid, length)),
+						format + " truncated at " + length);
+			}
+			for (byte[] suffix : new byte[][] { { 0 }, { 80, 75, 3, 4 }, { 37, 80, 68, 70 }, valid }) {
+				byte[] extended = Arrays.copyOf(valid, valid.length + suffix.length);
+				System.arraycopy(suffix, 0, extended, valid.length, suffix.length);
+				assertNotEquals(CheckStatus.PASS, inspect(extended), format + " appended payload");
+			}
+		}
+	}
+
+	@Test
+	void crcCorrectPngHeaderViolationsAndDuplicateHeadersReject() throws Exception {
+		byte[] valid = png(new byte[] { 0, 1, 2, 3 }, new byte[0]);
+		byte[] header = Arrays.copyOfRange(valid, 16, 29);
+		for (int field : new int[] { 8, 9, 10, 11, 12 }) {
+			byte[] altered = header.clone();
+			altered[field] = (byte) 127;
+			var bytes = new ByteArrayOutputStream();
+			bytes.write(valid, 0, 8);
+			bytes.write(chunk("IHDR", altered));
+			bytes.write(valid, 33, valid.length - 33);
+			assertEquals(CheckStatus.FAIL, inspect(bytes.toByteArray()), "IHDR field " + field);
+		}
+		var duplicate = new ByteArrayOutputStream();
+		duplicate.write(valid, 0, 33);
+		duplicate.write(chunk("IHDR", header));
+		duplicate.write(valid, 33, valid.length - 33);
+		assertEquals(CheckStatus.FAIL, inspect(duplicate.toByteArray()));
+	}
+
 }

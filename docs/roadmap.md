@@ -208,4 +208,13 @@ preparation, storage qualification, security review and adoption evidence.
   separate image-worker artifact. Ordinary embedded content checks cannot satisfy
   an isolated policy. Image descriptors bind immutable image/profile identity;
   workers verify containment and captured length/digest before parsing. Native
-  policy/failure tests pass; Linux end-to-end image evidence is pending this push.
+  policy/failure tests pass; [CI run 41324650392](https://github.com/alby-raju/filegate/actions/runs/41324650392)
+  passes on Linux/macOS, including full gate-to-container PNG/JPEG approval,
+  malformed-input blocking and closed-runtime refusal.
+
+- M2 image corpus expansion: every truncated prefix of generated PNG/JPEG files,
+  appended zero/ZIP/PDF/second-image payloads, CRC-correct unsupported PNG header
+  fields and duplicate headers block approval. The native reactor passes 71 tests;
+  three actual-container tests are skipped locally and required in Linux CI.
+  This deterministic corpus is not a substitute for coverage-guided fuzzing or
+  independent security review.
