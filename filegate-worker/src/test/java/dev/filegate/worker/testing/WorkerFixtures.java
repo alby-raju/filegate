@@ -17,7 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.worker.testing;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -27,13 +26,14 @@ import dev.filegate.worker.process.WorkerFailure;
 import dev.filegate.worker.process.WorkerRun;
 
 public final class WorkerFixtures {
-    private WorkerFixtures() {}
+	private WorkerFixtures() {
+	}
 
-    public static SandboxLimits sandboxLimits() {
-        return new SandboxLimits(256L * 1024 * 1024, 32L * 1024 * 1024, 128, 1000);
-    }
+	public static SandboxLimits sandboxLimits() {
+		return new SandboxLimits(256L * 1024 * 1024, 32L * 1024 * 1024, 128, 1000);
+	}
 
-    public static WorkerFailure failure(WorkerRun run) {
-        return assertInstanceOf(WorkerRun.Failed.class, run).failure();
-    }
+	public static WorkerFailure failure(WorkerRun run) {
+		return assertInstanceOf(WorkerRun.Failed.class, run).failure();
+	}
 }

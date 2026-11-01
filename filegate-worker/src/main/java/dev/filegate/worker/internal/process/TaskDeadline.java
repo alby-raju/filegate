@@ -17,7 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.worker.internal.process;
 
 import java.time.Duration;
@@ -25,16 +24,17 @@ import java.util.concurrent.TimeoutException;
 
 /** Monotonic deadline shared by all phases of one attached task. */
 public final class TaskDeadline {
-    private final long started = System.nanoTime();
-    private final long timeoutNanos;
+	private final long started = System.nanoTime();
+	private final long timeoutNanos;
 
-    public TaskDeadline(Duration timeout) {
-        this.timeoutNanos = timeout.toNanos();
-    }
+	public TaskDeadline(Duration timeout) {
+		this.timeoutNanos = timeout.toNanos();
+	}
 
-    public long remainingNanos() throws TimeoutException {
-        long remaining = timeoutNanos - (System.nanoTime() - started);
-        if (remaining <= 0) throw new TimeoutException();
-        return remaining;
-    }
+	public long remainingNanos() throws TimeoutException {
+		long remaining = timeoutNanos - (System.nanoTime() - started);
+		if (remaining <= 0)
+			throw new TimeoutException();
+		return remaining;
+	}
 }

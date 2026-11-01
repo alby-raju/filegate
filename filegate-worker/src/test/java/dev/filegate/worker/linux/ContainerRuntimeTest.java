@@ -17,23 +17,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.worker.linux;
 
 import static dev.filegate.worker.testing.WorkerFixtures.failure;
 import static dev.filegate.worker.testing.WorkerFixtures.sandboxLimits;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.worker.process.WorkerFailure;
-import dev.filegate.worker.process.WorkerLimits;
-import dev.filegate.worker.protocol.ProtocolBinding;
-import dev.filegate.worker.testing.WorkerStubMain;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
@@ -44,73 +33,66 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
 
-/** Required in the Linux container CI job; deliberately unavailable on native macOS. */
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.io.TempDir;
+
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.worker.process.WorkerFailure;
+import dev.filegate.worker.process.WorkerLimits;
+import dev.filegate.worker.protocol.ProtocolBinding;
+import dev.filegate.worker.testing.WorkerStubMain;
+
+/**
+ * Required in the Linux container CI job; deliberately unavailable on native
+ * macOS.
+ */
 @EnabledIfEnvironmentVariable(named = "FILEGATE_DOCKER_IMAGE", matches = ".+")
 class ContainerRuntimeTest {
-    @TempDir Path temp;
+	@TempDir
+	Path temp;
 
-    private LinuxContainerRuntime runtime() throws Exception {
-        return LinuxContainerRuntime.open(
-                temp,
-                new ContainerSpec(
-                        Path.of("/usr/bin/docker"),
-                        System.getenv("FILEGATE_DOCKER_IMAGE"),
-                        65534,
-                        65534,
-                        sandboxLimits()),
-                new WorkerLimits(
-                        1, Duration.ofSeconds(8), Duration.ofSeconds(2), Duration.ZERO, 2048));
-    }
+	private LinuxContainerRuntime runtime() throws Exception {
+		return LinuxContainerRuntime.open(temp,
+				new ContainerSpec(Path.of("/usr/bin/docker"), System.getenv("FILEGATE_DOCKER_IMAGE"), 65534, 65534,
+						sandboxLimits()),
+				new WorkerLimits(1, Duration.ofSeconds(8), Duration.ofSeconds(2), Duration.ZERO, 2048));
+	}
 
-    private List<String> arguments(String mode) {
-        var args = new ArrayList<>(List.of(WorkerStubMain.class.getName(), mode));
-        args.addAll(List.of(sandboxLimits().arguments()));
-        return args;
-    }
+	private List<String> arguments(String mode) {
+		var args = new ArrayList<>(List.of(WorkerStubMain.class.getName(), mode));
+		args.addAll(List.of(sandboxLimits().arguments()));
+		return args;
+	}
 
-    private ProtocolBinding binding(byte[] bytes) throws Exception {
-        return new ProtocolBinding(
-                UUID.randomUUID(),
-                new ArtifactIdentity(
-                        bytes.length,
-                        HexFormat.of()
-                                .formatHex(
-                                        java.security.MessageDigest.getInstance("SHA-256")
-                                                .digest(bytes))),
-                "b".repeat(64),
-                "test-only-sandbox-fixture",
-                List.of("test-only"));
-    }
+	private ProtocolBinding binding(byte[] bytes) throws Exception {
+		return new ProtocolBinding(UUID.randomUUID(),
+				new ArtifactIdentity(bytes.length,
+						HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(bytes))),
+				"b".repeat(64), "test-only-sandbox-fixture", List.of("test-only"));
+	}
 
-    @Test
-    void kernelProbeAndBoundPayloadPassInAnActuallyRestrictedContainer() throws Exception {
-        try (var runtime = runtime()) {
-            byte[] bytes = {1, 2, 3};
-            var run =
-                    runtime.execute(
-                            binding(bytes),
-                            new ByteArrayInputStream(bytes),
-                            arguments("sandbox-pass"));
-            assertTrue(run.succeeded(), () -> "Failure: " + failure(run));
-        }
-        try (var files = Files.list(temp)) {
-            assertEquals(0, files.count());
-        }
-    }
+	@Test
+	void kernelProbeAndBoundPayloadPassInAnActuallyRestrictedContainer() throws Exception {
+		try (var runtime = runtime()) {
+			byte[] bytes = { 1, 2, 3 };
+			var run = runtime.execute(binding(bytes), new ByteArrayInputStream(bytes), arguments("sandbox-pass"));
+			assertTrue(run.succeeded(), () -> "Failure: " + failure(run));
+		}
+		try (var files = Files.list(temp)) {
+			assertEquals(0, files.count());
+		}
+	}
 
-    @Test
-    void timeoutRevokesContainerAndNoLateResultIsAccepted() throws Exception {
-        try (var runtime = runtime()) {
-            byte[] bytes = {1};
-            var run =
-                    runtime.execute(
-                            binding(bytes),
-                            new ByteArrayInputStream(bytes),
-                            arguments("sandbox-hang"));
-            assertEquals(WorkerFailure.TIMEOUT, failure(run));
-        }
-        try (var files = Files.list(temp)) {
-            assertEquals(0, files.count());
-        }
-    }
+	@Test
+	void timeoutRevokesContainerAndNoLateResultIsAccepted() throws Exception {
+		try (var runtime = runtime()) {
+			byte[] bytes = { 1 };
+			var run = runtime.execute(binding(bytes), new ByteArrayInputStream(bytes), arguments("sandbox-hang"));
+			assertEquals(WorkerFailure.TIMEOUT, failure(run));
+		}
+		try (var files = Files.list(temp)) {
+			assertEquals(0, files.count());
+		}
+	}
 }

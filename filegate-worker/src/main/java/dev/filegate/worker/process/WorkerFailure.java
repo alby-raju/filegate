@@ -17,18 +17,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.worker.process;
 
 public enum WorkerFailure {
-    CAPACITY,
-    BACKOFF,
-    CLOSED,
-    TIMEOUT,
-    CANCELLED,
-    LAUNCH_FAILED,
-    CRASH,
-    PROTOCOL,
-    STDERR_LIMIT,
-    TERMINATION_FAILED
+	CAPACITY, BACKOFF, CLOSED, TIMEOUT, CANCELLED, LAUNCH_FAILED, CRASH, PROTOCOL, STDERR_LIMIT, TERMINATION_FAILED
 }

@@ -17,28 +17,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.worker.process;
-
-import dev.filegate.worker.protocol.WorkerResponse;
 
 import java.util.Objects;
 
-/** A response and a blocking failure cannot coexist. A response alone is not content approval. */
+import dev.filegate.worker.protocol.WorkerResponse;
+
+/**
+ * A response and a blocking failure cannot coexist. A response alone is not
+ * content approval.
+ */
 public sealed interface WorkerRun {
-    default boolean succeeded() {
-        return this instanceof Completed;
-    }
+	default boolean succeeded() {
+		return this instanceof Completed;
+	}
 
-    record Completed(WorkerResponse response) implements WorkerRun {
-        public Completed {
-            Objects.requireNonNull(response, "response");
-        }
-    }
+	record Completed(WorkerResponse response) implements WorkerRun {
+		public Completed {
+			Objects.requireNonNull(response, "response");
+		}
+	}
 
-    record Failed(WorkerFailure failure) implements WorkerRun {
-        public Failed {
-            Objects.requireNonNull(failure, "failure");
-        }
-    }
+	record Failed(WorkerFailure failure) implements WorkerRun {
+		public Failed {
+			Objects.requireNonNull(failure, "failure");
+		}
+	}
 }
