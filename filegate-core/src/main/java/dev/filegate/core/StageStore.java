@@ -54,6 +54,10 @@ final class StageStore implements AutoCloseable {
             byte[] buffer = new byte[limits.captureBufferBytes()];
             try (var output = Files.newOutputStream(path)) {
                 while (true) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        failure = ReasonCode.CANCELLED;
+                        break;
+                    }
                     // Read at most one byte beyond the policy limit, without overflow.
                     int wanted = (int) Math.min(buffer.length,
                             maxBytes - count >= buffer.length ? buffer.length : maxBytes - count + 1);
@@ -118,6 +122,13 @@ final class StageStore implements AutoCloseable {
 
     ResourceUsage usage() {
         return ledger.usage((int) artifacts.stream().filter(CapturedArtifact::pendingDeletion).count());
+    }
+
+    void reclaimed(CapturedArtifact artifact) {
+        artifacts.remove(artifact);
+        synchronized (this) {
+            if (closed && captures == 0 && artifacts.isEmpty()) delete(root);
+        }
     }
 
     private void removeDeletedAndMaybeRoot() {

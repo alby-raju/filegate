@@ -40,6 +40,7 @@ final class CapturedArtifact implements AutoCloseable {
         if (!deleted && ownerClosed && readers == 0 && store.delete(path)) {
             deleted = true;
             reservation.close();
+            store.reclaimed(this);
         }
         return deleted;
     }

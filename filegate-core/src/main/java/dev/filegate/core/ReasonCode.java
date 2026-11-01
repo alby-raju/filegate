@@ -8,6 +8,7 @@ public enum ReasonCode {
     UNSUPPORTED_FORMAT(CheckStatus.FAIL),
     CLAIM_MISMATCH(CheckStatus.FAIL),
     CHECK_ERROR(CheckStatus.ERROR),
+    CANCELLED(CheckStatus.ERROR),
     CAPACITY_EXHAUSTED(CheckStatus.ERROR),
     CAPTURE_FAILED(CheckStatus.ERROR),
     CLEANUP_PENDING(CheckStatus.ERROR),
