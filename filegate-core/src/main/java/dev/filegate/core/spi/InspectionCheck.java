@@ -17,7 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.spi;
 
 import dev.filegate.core.inspection.CheckEvidence;
@@ -25,12 +24,15 @@ import dev.filegate.core.policy.CheckDescriptor;
 
 /**
  * Explicitly trusted embedded check. Metadata is bound at gate construction.
- * Implementations may serve concurrent files and must be thread-safe.
- * Deep hostile-file parsers require isolated workers.
+ * Implementations may serve concurrent files and must be thread-safe. Deep
+ * hostile-file parsers require isolated workers.
  */
 public interface InspectionCheck {
-    CheckDescriptor descriptor();
+	CheckDescriptor descriptor();
 
-    /** Input access is revoked when this call returns; do not retain it or start background tasks. */
-    CheckEvidence inspect(InspectionInput input) throws Exception;
+	/**
+	 * Input access is revoked when this call returns; do not retain it or start
+	 * background tasks.
+	 */
+	CheckEvidence inspect(InspectionInput input) throws Exception;
 }

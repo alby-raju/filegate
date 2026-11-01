@@ -17,30 +17,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.policy;
-
-import dev.filegate.core.internal.validation.Identifiers;
 
 import java.util.Objects;
 
-/** Explicit capability identity. Version identifies the installed inspector build. */
-public record CheckDescriptor(
-        String id,
-        String version,
-        String coverageProfile,
-        ExecutionMode executionMode,
-        CheckKind kind) {
-    public CheckDescriptor(
-            String id, String version, String coverageProfile, ExecutionMode executionMode) {
-        this(id, version, coverageProfile, executionMode, CheckKind.CONTENT);
-    }
+import dev.filegate.core.internal.validation.Identifiers;
 
-    public CheckDescriptor {
-        id = Identifiers.requireToken(id);
-        version = Identifiers.requireToken(version);
-        coverageProfile = Identifiers.requireToken(coverageProfile);
-        Objects.requireNonNull(executionMode, "executionMode");
-        Objects.requireNonNull(kind, "kind");
-    }
+/**
+ * Explicit capability identity. Version identifies the installed inspector
+ * build.
+ */
+public record CheckDescriptor(String id, String version, String coverageProfile, ExecutionMode executionMode,
+		CheckKind kind) {
+	public CheckDescriptor(String id, String version, String coverageProfile, ExecutionMode executionMode) {
+		this(id, version, coverageProfile, executionMode, CheckKind.CONTENT);
+	}
+
+	public CheckDescriptor {
+		id = Identifiers.requireToken(id);
+		version = Identifiers.requireToken(version);
+		coverageProfile = Identifiers.requireToken(coverageProfile);
+		Objects.requireNonNull(executionMode, "executionMode");
+		Objects.requireNonNull(kind, "kind");
+	}
 }

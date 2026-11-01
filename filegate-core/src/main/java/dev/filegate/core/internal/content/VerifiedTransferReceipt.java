@@ -17,51 +17,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.content;
+
+import java.util.UUID;
 
 import dev.filegate.core.content.ArtifactIdentity;
 import dev.filegate.core.content.TransferReceipt;
 import dev.filegate.core.policy.Use;
 
-import java.util.UUID;
-
-/** Scoped transfer evidence, not a portable authorization or persistence token. */
+/**
+ * Scoped transfer evidence, not a portable authorization or persistence token.
+ */
 public final class VerifiedTransferReceipt implements TransferReceipt {
-    private final String transferId = UUID.randomUUID().toString();
-    private final ArtifactIdentity artifact;
-    private final String policyFingerprint;
-    private final Use use;
-    private final String pendingDestinationId;
+	private final String transferId = UUID.randomUUID().toString();
+	private final ArtifactIdentity artifact;
+	private final String policyFingerprint;
+	private final Use use;
+	private final String pendingDestinationId;
 
-    public VerifiedTransferReceipt(
-            ArtifactIdentity artifact,
-            String policyFingerprint,
-            Use use,
-            String pendingDestinationId) {
-        this.artifact = artifact;
-        this.policyFingerprint = policyFingerprint;
-        this.use = use;
-        this.pendingDestinationId = pendingDestinationId;
-    }
+	public VerifiedTransferReceipt(ArtifactIdentity artifact, String policyFingerprint, Use use,
+			String pendingDestinationId) {
+		this.artifact = artifact;
+		this.policyFingerprint = policyFingerprint;
+		this.use = use;
+		this.pendingDestinationId = pendingDestinationId;
+	}
 
-    public String transferId() {
-        return transferId;
-    }
+	public String transferId() {
+		return transferId;
+	}
 
-    public ArtifactIdentity artifact() {
-        return artifact;
-    }
+	public ArtifactIdentity artifact() {
+		return artifact;
+	}
 
-    public String policyFingerprint() {
-        return policyFingerprint;
-    }
+	public String policyFingerprint() {
+		return policyFingerprint;
+	}
 
-    public Use use() {
-        return use;
-    }
+	public Use use() {
+		return use;
+	}
 
-    public String pendingDestinationId() {
-        return pendingDestinationId;
-    }
+	public String pendingDestinationId() {
+		return pendingDestinationId;
+	}
 }

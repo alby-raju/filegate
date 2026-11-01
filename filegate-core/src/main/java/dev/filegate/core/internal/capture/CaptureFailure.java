@@ -17,24 +17,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.capture;
-
-import dev.filegate.core.inspection.ReasonCode;
 
 import java.io.IOException;
 
-/** Internal control flow preserves a known violation even if closing the writer also fails. */
+import dev.filegate.core.inspection.ReasonCode;
+
+/**
+ * Internal control flow preserves a known violation even if closing the writer
+ * also fails.
+ */
 final class CaptureFailure extends IOException {
-    private static final long serialVersionUID = 1L;
-    private final ReasonCode reason;
+	private static final long serialVersionUID = 1L;
+	private final ReasonCode reason;
 
-    CaptureFailure(ReasonCode reason) {
-        super(reason.name());
-        this.reason = reason;
-    }
+	CaptureFailure(ReasonCode reason) {
+		super(reason.name());
+		this.reason = reason;
+	}
 
-    ReasonCode reason() {
-        return reason;
-    }
+	ReasonCode reason() {
+		return reason;
+	}
 }

@@ -17,7 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.testing;
 
 import dev.filegate.core.inspection.CheckEvidence;
@@ -26,30 +25,33 @@ import dev.filegate.core.policy.ExecutionMode;
 import dev.filegate.core.spi.InspectionCheck;
 import dev.filegate.core.spi.InspectionInput;
 
-/** Explicitly test-only checks; these helpers do not provide format coverage. */
+/**
+ * Explicitly test-only checks; these helpers do not provide format coverage.
+ */
 public final class TestChecks {
-    private TestChecks() {}
+	private TestChecks() {
+	}
 
-    @FunctionalInterface
-    public interface Body {
-        CheckEvidence inspect(InspectionInput input) throws Exception;
-    }
+	@FunctionalInterface
+	public interface Body {
+		CheckEvidence inspect(InspectionInput input) throws Exception;
+	}
 
-    public static CheckDescriptor descriptor(String id) {
-        return new CheckDescriptor(id, "test-1", "test-only", ExecutionMode.EMBEDDED);
-    }
+	public static CheckDescriptor descriptor(String id) {
+		return new CheckDescriptor(id, "test-1", "test-only", ExecutionMode.EMBEDDED);
+	}
 
-    public static InspectionCheck check(String id, Body body) {
-        return new InspectionCheck() {
-            @Override
-            public CheckDescriptor descriptor() {
-                return TestChecks.descriptor(id);
-            }
+	public static InspectionCheck check(String id, Body body) {
+		return new InspectionCheck() {
+			@Override
+			public CheckDescriptor descriptor() {
+				return TestChecks.descriptor(id);
+			}
 
-            @Override
-            public CheckEvidence inspect(InspectionInput input) throws Exception {
-                return body.inspect(input);
-            }
-        };
-    }
+			@Override
+			public CheckEvidence inspect(InspectionInput input) throws Exception {
+				return body.inspect(input);
+			}
+		};
+	}
 }

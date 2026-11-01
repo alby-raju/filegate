@@ -17,10 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.policy;
-
-import dev.filegate.core.internal.crypto.Sha256;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -28,33 +25,38 @@ import java.io.IOException;
 import java.util.HexFormat;
 import java.util.List;
 
-/** Versioned canonical policy encoding; independent of assembly and execution. */
-final class PolicyFingerprint {
-    private PolicyFingerprint() {}
+import dev.filegate.core.internal.crypto.Sha256;
 
-    static String compute(PolicySpec spec, List<CheckDescriptor> checks) {
-        try {
-            var bytes = new ByteArrayOutputStream();
-            try (var output = new DataOutputStream(bytes)) {
-                // Versioned, length-delimited canonical encoding, independent of locale and map
-                // order.
-                output.writeUTF("filegate-policy-v2");
-                output.writeUTF(spec.name());
-                output.writeUTF(spec.use().name());
-                output.writeLong(spec.maxInputBytes());
-                output.writeUTF(spec.executionMode().name());
-                output.writeInt(checks.size());
-                for (CheckDescriptor check : checks) {
-                    output.writeUTF(check.id());
-                    output.writeUTF(check.version());
-                    output.writeUTF(check.coverageProfile());
-                    output.writeUTF(check.executionMode().name());
-                    output.writeUTF(check.kind().name());
-                }
-            }
-            return HexFormat.of().formatHex(Sha256.newDigest().digest(bytes.toByteArray()));
-        } catch (IOException impossible) {
-            throw new IllegalStateException(impossible);
-        }
-    }
+/**
+ * Versioned canonical policy encoding; independent of assembly and execution.
+ */
+final class PolicyFingerprint {
+	private PolicyFingerprint() {
+	}
+
+	static String compute(PolicySpec spec, List<CheckDescriptor> checks) {
+		try {
+			var bytes = new ByteArrayOutputStream();
+			try (var output = new DataOutputStream(bytes)) {
+				// Versioned, length-delimited canonical encoding, independent of locale and map
+				// order.
+				output.writeUTF("filegate-policy-v2");
+				output.writeUTF(spec.name());
+				output.writeUTF(spec.use().name());
+				output.writeLong(spec.maxInputBytes());
+				output.writeUTF(spec.executionMode().name());
+				output.writeInt(checks.size());
+				for (CheckDescriptor check : checks) {
+					output.writeUTF(check.id());
+					output.writeUTF(check.version());
+					output.writeUTF(check.coverageProfile());
+					output.writeUTF(check.executionMode().name());
+					output.writeUTF(check.kind().name());
+				}
+			}
+			return HexFormat.of().formatHex(Sha256.newDigest().digest(bytes.toByteArray()));
+		} catch (IOException impossible) {
+			throw new IllegalStateException(impossible);
+		}
+	}
 }

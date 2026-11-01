@@ -17,8 +17,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.resource;
 
 /** Aggregate counters contain no artifact paths or content identifiers. */
-public record ResourceUsage(int operations, long reservedStagingBytes, int pendingDeletions) {}
+public record ResourceUsage(int operations, long reservedStagingBytes, int pendingDeletions) {
+}

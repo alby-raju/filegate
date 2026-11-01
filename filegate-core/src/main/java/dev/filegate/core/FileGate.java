@@ -17,8 +17,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import dev.filegate.core.inspection.InputClaims;
 import dev.filegate.core.inspection.Inspection;
@@ -30,75 +36,63 @@ import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.resource.ResourceUsage;
 import dev.filegate.core.spi.InspectionCheck;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-
-/** One long-lived gate per resource domain. Assembly and lifecycle stay at this boundary. */
+/**
+ * One long-lived gate per resource domain. Assembly and lifecycle stay at this
+ * boundary.
+ */
 public final class FileGate implements AutoCloseable {
-    private final CheckRegistry registry;
-    private final ResourceLimits limits;
-    private final InspectionEngine engine;
-    private final AtomicReference<CheckRegistry.Plan> plan;
+	private final CheckRegistry registry;
+	private final ResourceLimits limits;
+	private final InspectionEngine engine;
+	private final AtomicReference<CheckRegistry.Plan> plan;
 
-    private FileGate(
-            CheckRegistry registry,
-            ResourceLimits limits,
-            InspectionEngine engine,
-            CheckRegistry.Plan plan) {
-        this.registry = registry;
-        this.limits = limits;
-        this.engine = engine;
-        this.plan = new AtomicReference<>(plan);
-    }
+	private FileGate(CheckRegistry registry, ResourceLimits limits, InspectionEngine engine, CheckRegistry.Plan plan) {
+		this.registry = registry;
+		this.limits = limits;
+		this.engine = engine;
+		this.plan = new AtomicReference<>(plan);
+	}
 
-    public static FileGate open(
-            Path stagingParent,
-            ResourceLimits limits,
-            CompiledPolicy policy,
-            List<InspectionCheck> installed)
-            throws IOException {
-        Objects.requireNonNull(limits, "limits");
-        var registry = new CheckRegistry(installed);
-        var plan = registry.bind(policy, limits);
-        var engine =
-                new InspectionEngine(
-                        new StageStore(stagingParent, limits), limits.captureBufferBytes());
-        return new FileGate(registry, limits, engine, plan);
-    }
+	public static FileGate open(Path stagingParent, ResourceLimits limits, CompiledPolicy policy,
+			List<InspectionCheck> installed) throws IOException {
+		Objects.requireNonNull(limits, "limits");
+		var registry = new CheckRegistry(installed);
+		var plan = registry.bind(policy, limits);
+		var engine = new InspectionEngine(new StageStore(stagingParent, limits), limits.captureBufferBytes());
+		return new FileGate(registry, limits, engine, plan);
+	}
 
-    /** Existing operations retain their resolved plan and policy snapshot. */
-    public void reload(CompiledPolicy next) {
-        plan.set(registry.bind(next, limits));
-    }
+	/** Existing operations retain their resolved plan and policy snapshot. */
+	public void reload(CompiledPolicy next) {
+		plan.set(registry.bind(next, limits));
+	}
 
-    public Inspection inspect(InputStream source, InputClaims claims) {
-        Objects.requireNonNull(source, "source");
-        Objects.requireNonNull(claims, "claims");
-        return engine.inspect(plan.get(), source, claims);
-    }
+	public Inspection inspect(InputStream source, InputClaims claims) {
+		Objects.requireNonNull(source, "source");
+		Objects.requireNonNull(claims, "claims");
+		return engine.inspect(plan.get(), source, claims);
+	}
 
-    /** Path sources are copied into owned staging; caller files are never modified. */
-    public Inspection inspect(Path source, InputClaims claims) {
-        Objects.requireNonNull(source, "source");
-        Objects.requireNonNull(claims, "claims");
-        return engine.inspect(plan.get(), source, claims);
-    }
+	/**
+	 * Path sources are copied into owned staging; caller files are never modified.
+	 */
+	public Inspection inspect(Path source, InputClaims claims) {
+		Objects.requireNonNull(source, "source");
+		Objects.requireNonNull(claims, "claims");
+		return engine.inspect(plan.get(), source, claims);
+	}
 
-    public ResourceUsage resourceUsage() {
-        return engine.resourceUsage();
-    }
+	public ResourceUsage resourceUsage() {
+		return engine.resourceUsage();
+	}
 
-    public void retryCleanup() {
-        engine.retryCleanup();
-    }
+	public void retryCleanup() {
+		engine.retryCleanup();
+	}
 
-    /** Stops new capture. Existing results remain caller-owned. */
-    @Override
-    public void close() {
-        engine.close();
-    }
+	/** Stops new capture. Existing results remain caller-owned. */
+	@Override
+	public void close() {
+		engine.close();
+	}
 }

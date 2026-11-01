@@ -17,7 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.inspection;
 
 import dev.filegate.core.content.ApprovedContent;
@@ -27,25 +26,25 @@ import dev.filegate.core.internal.capture.CapturedArtifact;
 import dev.filegate.core.internal.content.VerifiedContent;
 
 public final class ApprovedInspection implements Approved {
-    private final InspectionReport report;
-    private final VerifiedContent content;
+	private final InspectionReport report;
+	private final VerifiedContent content;
 
-    public ApprovedInspection(InspectionReport report, CapturedArtifact artifact, int bufferBytes) {
-        this.report = report;
-        this.content = new VerifiedContent(artifact, report.policy(), bufferBytes);
-    }
+	public ApprovedInspection(InspectionReport report, CapturedArtifact artifact, int bufferBytes) {
+		this.report = report;
+		this.content = new VerifiedContent(artifact, report.policy(), bufferBytes);
+	}
 
-    @Override
-    public InspectionReport report() {
-        return report;
-    }
+	@Override
+	public InspectionReport report() {
+		return report;
+	}
 
-    public ApprovedContent content() {
-        return content;
-    }
+	public ApprovedContent content() {
+		return content;
+	}
 
-    @Override
-    public void close() {
-        content.close();
-    }
+	@Override
+	public void close() {
+		content.close();
+	}
 }

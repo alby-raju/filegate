@@ -17,12 +17,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.inspection;
 
 public sealed interface Inspection extends AutoCloseable permits Approved, Blocked {
-    InspectionReport report();
+	InspectionReport report();
 
-    @Override
-    void close();
+	@Override
+	void close();
 }

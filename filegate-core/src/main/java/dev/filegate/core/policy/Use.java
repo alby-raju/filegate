@@ -17,13 +17,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.policy;
 
-/** The host's declared destination use, bound into policies and transfer receipts. */
+/**
+ * The host's declared destination use, bound into policies and transfer
+ * receipts.
+ */
 public enum Use {
-    PRIVATE_STORAGE,
-    DOWNLOAD,
-    INLINE_PREVIEW,
-    EXTERNAL_SHARE
+	PRIVATE_STORAGE, DOWNLOAD, INLINE_PREVIEW, EXTERNAL_SHARE
 }

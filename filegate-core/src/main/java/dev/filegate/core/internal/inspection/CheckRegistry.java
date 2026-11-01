@@ -17,8 +17,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.inspection;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import dev.filegate.core.internal.execution.BoundPrefixCheck;
 import dev.filegate.core.policy.CheckDescriptor;
@@ -29,75 +35,61 @@ import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.spi.InspectionCheck;
 import dev.filegate.core.spi.PrefixInspectionCheck;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-/** Resolves explicit plugins once; installing a plugin never changes a policy implicitly. */
+/**
+ * Resolves explicit plugins once; installing a plugin never changes a policy
+ * implicitly.
+ */
 public final class CheckRegistry {
-    public record RegisteredCheck(
-            CheckDescriptor descriptor,
-            InspectionCheck implementation,
-            Optional<BoundPrefixCheck> prefix) {}
+	public record RegisteredCheck(CheckDescriptor descriptor, InspectionCheck implementation,
+			Optional<BoundPrefixCheck> prefix) {
+	}
 
-    public record Plan(
-            CompiledPolicy policy, List<RegisteredCheck> checks, List<BoundPrefixCheck> prefixes) {
-        public Plan {
-            checks = List.copyOf(checks);
-            prefixes = List.copyOf(prefixes);
-        }
-    }
+	public record Plan(CompiledPolicy policy, List<RegisteredCheck> checks, List<BoundPrefixCheck> prefixes) {
+		public Plan {
+			checks = List.copyOf(checks);
+			prefixes = List.copyOf(prefixes);
+		}
+	}
 
-    private final Map<String, RegisteredCheck> installed;
+	private final Map<String, RegisteredCheck> installed;
 
-    public CheckRegistry(List<InspectionCheck> checks) {
-        var registered = new HashMap<String, RegisteredCheck>();
-        for (InspectionCheck check : checks) {
-            Objects.requireNonNull(check, "check");
-            CheckDescriptor descriptor = Objects.requireNonNull(check.descriptor(), "descriptor");
-            Optional<BoundPrefixCheck> prefix = Optional.empty();
-            if (check instanceof PrefixInspectionCheck prefixCheck) {
-                if (descriptor.kind() != CheckKind.PREFLIGHT) {
-                    throw new IllegalArgumentException(
-                            "Prefix checks must declare preflight coverage");
-                }
-                prefix =
-                        Optional.of(
-                                new BoundPrefixCheck(
-                                        descriptor.id(), prefixCheck.prefixBytes(), prefixCheck));
-            }
-            if (registered.putIfAbsent(
-                            descriptor.id(), new RegisteredCheck(descriptor, check, prefix))
-                    != null) {
-                throw new IllegalArgumentException("Duplicate installed check");
-            }
-        }
-        installed = Map.copyOf(registered);
-    }
+	public CheckRegistry(List<InspectionCheck> checks) {
+		var registered = new HashMap<String, RegisteredCheck>();
+		for (InspectionCheck check : checks) {
+			Objects.requireNonNull(check, "check");
+			CheckDescriptor descriptor = Objects.requireNonNull(check.descriptor(), "descriptor");
+			Optional<BoundPrefixCheck> prefix = Optional.empty();
+			if (check instanceof PrefixInspectionCheck prefixCheck) {
+				if (descriptor.kind() != CheckKind.PREFLIGHT) {
+					throw new IllegalArgumentException("Prefix checks must declare preflight coverage");
+				}
+				prefix = Optional.of(new BoundPrefixCheck(descriptor.id(), prefixCheck.prefixBytes(), prefixCheck));
+			}
+			if (registered.putIfAbsent(descriptor.id(), new RegisteredCheck(descriptor, check, prefix)) != null) {
+				throw new IllegalArgumentException("Duplicate installed check");
+			}
+		}
+		installed = Map.copyOf(registered);
+	}
 
-    public Plan bind(CompiledPolicy policy, ResourceLimits limits) {
-        Objects.requireNonNull(policy, "policy");
-        if (policy.executionMode() != ExecutionMode.EMBEDDED) {
-            throw new IllegalArgumentException(
-                    "No isolated executor is installed; embedded fallback is forbidden");
-        }
-        if (policy.maxInputBytes() > limits.maxStagingBytes()) {
-            throw new IllegalArgumentException("Policy input allowance exceeds the stage envelope");
-        }
-        var checks = new ArrayList<RegisteredCheck>();
-        var prefixes = new ArrayList<BoundPrefixCheck>();
-        for (CheckDescriptor required : policy.checks()) {
-            RegisteredCheck check = installed.get(required.id());
-            if (check == null || !required.equals(check.descriptor())) {
-                throw new IllegalArgumentException(
-                        "Installed check does not match compiled capability");
-            }
-            checks.add(check);
-            check.prefix().ifPresent(prefixes::add);
-        }
-        return new Plan(policy, checks, prefixes);
-    }
+	public Plan bind(CompiledPolicy policy, ResourceLimits limits) {
+		Objects.requireNonNull(policy, "policy");
+		if (policy.executionMode() != ExecutionMode.EMBEDDED) {
+			throw new IllegalArgumentException("No isolated executor is installed; embedded fallback is forbidden");
+		}
+		if (policy.maxInputBytes() > limits.maxStagingBytes()) {
+			throw new IllegalArgumentException("Policy input allowance exceeds the stage envelope");
+		}
+		var checks = new ArrayList<RegisteredCheck>();
+		var prefixes = new ArrayList<BoundPrefixCheck>();
+		for (CheckDescriptor required : policy.checks()) {
+			RegisteredCheck check = installed.get(required.id());
+			if (check == null || !required.equals(check.descriptor())) {
+				throw new IllegalArgumentException("Installed check does not match compiled capability");
+			}
+			checks.add(check);
+			check.prefix().ifPresent(prefixes::add);
+		}
+		return new Plan(policy, checks, prefixes);
+	}
 }

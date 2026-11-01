@@ -17,25 +17,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.spi;
 
 import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.inspection.InputClaims;
 
-/** A deterministic preflight check that needs no more than its declared bounded prefix. */
+/**
+ * A deterministic preflight check that needs no more than its declared bounded
+ * prefix.
+ */
 public interface PrefixInspectionCheck extends InspectionCheck {
-    int MAX_PREFIX_BYTES = 4096;
+	int MAX_PREFIX_BYTES = 4096;
 
-    /** Required bytes, frozen at registration; must be between 1 and MAX_PREFIX_BYTES. */
-    int prefixBytes();
+	/**
+	 * Required bytes, frozen at registration; must be between 1 and
+	 * MAX_PREFIX_BYTES.
+	 */
+	int prefixBytes();
 
-    CheckEvidence inspectPrefix(byte[] prefix, InputClaims claims) throws Exception;
+	CheckEvidence inspectPrefix(byte[] prefix, InputClaims claims) throws Exception;
 
-    @Override
-    default CheckEvidence inspect(InspectionInput input) throws Exception {
-        try (var stream = input.openStream()) {
-            return inspectPrefix(stream.readNBytes(prefixBytes()), input.claims());
-        }
-    }
+	@Override
+	default CheckEvidence inspect(InspectionInput input) throws Exception {
+		try (var stream = input.openStream()) {
+			return inspectPrefix(stream.readNBytes(prefixBytes()), input.claims());
+		}
+	}
 }

@@ -17,19 +17,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.capture;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import dev.filegate.core.inspection.ReasonCode;
-import dev.filegate.core.internal.crypto.Sha256;
-import dev.filegate.core.internal.resource.ResourceLedger;
-import dev.filegate.core.resource.ResourceLimits;
-import dev.filegate.core.resource.ResourceUsage;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -43,214 +38,180 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import dev.filegate.core.inspection.ReasonCode;
+import dev.filegate.core.internal.crypto.Sha256;
+import dev.filegate.core.internal.resource.ResourceLedger;
+import dev.filegate.core.resource.ResourceLimits;
+import dev.filegate.core.resource.ResourceUsage;
+
 class CaptureResourceTest {
-    @TempDir Path temp;
+	@TempDir
+	Path temp;
 
-    @Test
-    void exactLimitAndEmptyCaptureBindLengthDigestAndPrivatePermissions() throws Exception {
-        try (var store = new StageStore(temp, new ResourceLimits(2, 32, 1024))) {
-            for (byte[] bytes : new byte[][] {new byte[0], new byte[16]}) {
-                var capture =
-                        assertInstanceOf(
-                                CaptureResult.Captured.class,
-                                store.capture(new ByteArrayInputStream(bytes), 16));
-                var artifact = capture.artifact();
-                assertEquals(bytes.length, artifact.identity().length());
-                assertEquals(
-                        HexFormat.of().formatHex(Sha256.newDigest().digest(bytes)),
-                        artifact.identity().sha256());
-                assertEquals(
-                        PosixFilePermissions.fromString("r--------"),
-                        Files.getPosixFilePermissions(artifact.path));
-                assertEquals(
-                        PosixFilePermissions.fromString("rwx------"),
-                        Files.getPosixFilePermissions(artifact.path.getParent()));
-                artifact.close();
-                assertFalse(Files.exists(artifact.path));
-                assertEquals(0, store.usage().reservedStagingBytes());
-            }
-        }
-        try (var files = Files.list(temp)) {
-            assertEquals(0, files.count());
-        }
-    }
+	@Test
+	void exactLimitAndEmptyCaptureBindLengthDigestAndPrivatePermissions() throws Exception {
+		try (var store = new StageStore(temp, new ResourceLimits(2, 32, 1024))) {
+			for (byte[] bytes : new byte[][] { new byte[0], new byte[16] }) {
+				var capture = assertInstanceOf(CaptureResult.Captured.class,
+						store.capture(new ByteArrayInputStream(bytes), 16));
+				var artifact = capture.artifact();
+				assertEquals(bytes.length, artifact.identity().length());
+				assertEquals(HexFormat.of().formatHex(Sha256.newDigest().digest(bytes)), artifact.identity().sha256());
+				assertEquals(PosixFilePermissions.fromString("r--------"),
+						Files.getPosixFilePermissions(artifact.path));
+				assertEquals(PosixFilePermissions.fromString("rwx------"),
+						Files.getPosixFilePermissions(artifact.path.getParent()));
+				artifact.close();
+				assertFalse(Files.exists(artifact.path));
+				assertEquals(0, store.usage().reservedStagingBytes());
+			}
+		}
+		try (var files = Files.list(temp)) {
+			assertEquals(0, files.count());
+		}
+	}
 
-    @Test
-    void overLimitReadsOnlyOneExtraByteAndNeverRetainsRejectedInput() throws Exception {
-        var source = new ByteArrayInputStream(new byte[100]);
-        try (var store = new StageStore(temp, new ResourceLimits(1, 10, 1024))) {
-            var capture = assertInstanceOf(CaptureResult.Denied.class, store.capture(source, 10));
-            assertEquals(ReasonCode.INPUT_TOO_LARGE, capture.reason());
-            assertEquals(89, source.available());
-            assertEquals(0, store.usage().operations());
-        }
-    }
+	@Test
+	void overLimitReadsOnlyOneExtraByteAndNeverRetainsRejectedInput() throws Exception {
+		var source = new ByteArrayInputStream(new byte[100]);
+		try (var store = new StageStore(temp, new ResourceLimits(1, 10, 1024))) {
+			var capture = assertInstanceOf(CaptureResult.Denied.class, store.capture(source, 10));
+			assertEquals(ReasonCode.INPUT_TOO_LARGE, capture.reason());
+			assertEquals(89, source.available());
+			assertEquals(0, store.usage().operations());
+		}
+	}
 
-    @Test
-    void capacityDenialHappensBeforeSourceReadAndSourceRemainsCallerOwned() throws Exception {
-        var closed = new AtomicBoolean();
-        var source =
-                new ByteArrayInputStream(new byte[1]) {
-                    @Override
-                    public void close() {
-                        closed.set(true);
-                    }
-                };
-        try (var store = new StageStore(temp, new ResourceLimits(1, 10, 1024))) {
-            var first =
-                    assertInstanceOf(CaptureResult.Captured.class, store.capture(source, 10))
-                            .artifact();
-            assertFalse(closed.get());
-            var denied =
-                    assertInstanceOf(
-                            CaptureResult.Denied.class,
-                            store.capture(
-                                    new InputStream() {
-                                        @Override
-                                        public int read() {
-                                            fail("Capacity denial must not read input");
-                                            return -1;
-                                        }
-                                    },
-                                    10));
-            assertEquals(ReasonCode.CAPACITY_EXHAUSTED, denied.reason());
-            first.close();
-            assertFalse(closed.get());
-        }
-    }
+	@Test
+	void capacityDenialHappensBeforeSourceReadAndSourceRemainsCallerOwned() throws Exception {
+		var closed = new AtomicBoolean();
+		var source = new ByteArrayInputStream(new byte[1]) {
+			@Override
+			public void close() {
+				closed.set(true);
+			}
+		};
+		try (var store = new StageStore(temp, new ResourceLimits(1, 10, 1024))) {
+			var first = assertInstanceOf(CaptureResult.Captured.class, store.capture(source, 10)).artifact();
+			assertFalse(closed.get());
+			var denied = assertInstanceOf(CaptureResult.Denied.class, store.capture(new InputStream() {
+				@Override
+				public int read() {
+					fail("Capacity denial must not read input");
+					return -1;
+				}
+			}, 10));
+			assertEquals(ReasonCode.CAPACITY_EXHAUSTED, denied.reason());
+			first.close();
+			assertFalse(closed.get());
+		}
+	}
 
-    @Test
-    void failedReadCleansStageAndReleasesQuota() throws Exception {
-        try (var store = new StageStore(temp, new ResourceLimits(1, 10, 1024))) {
-            var capture =
-                    assertInstanceOf(
-                            CaptureResult.Denied.class,
-                            store.capture(
-                                    new InputStream() {
-                                        @Override
-                                        public int read() throws IOException {
-                                            throw new IOException("private details");
-                                        }
-                                    },
-                                    10));
-            assertEquals(ReasonCode.CAPTURE_FAILED, capture.reason());
-            assertEquals(0, store.usage().reservedStagingBytes());
-            assertEquals(0, store.usage().pendingDeletions());
-        }
-    }
+	@Test
+	void failedReadCleansStageAndReleasesQuota() throws Exception {
+		try (var store = new StageStore(temp, new ResourceLimits(1, 10, 1024))) {
+			var capture = assertInstanceOf(CaptureResult.Denied.class, store.capture(new InputStream() {
+				@Override
+				public int read() throws IOException {
+					throw new IOException("private details");
+				}
+			}, 10));
+			assertEquals(ReasonCode.CAPTURE_FAILED, capture.reason());
+			assertEquals(0, store.usage().reservedStagingBytes());
+			assertEquals(0, store.usage().pendingDeletions());
+		}
+	}
 
-    @Test
-    void deletionFailureKeepsReservationUntilRetrySucceeds() throws Exception {
-        var failDeletion = new AtomicBoolean(true);
-        try (var store =
-                new StageStore(
-                        temp,
-                        new ResourceLimits(1, 10, 1024),
-                        path -> {
-                            if (failDeletion.get())
-                                throw new IOException("injected deletion failure");
-                            Files.deleteIfExists(path);
-                        })) {
-            var artifact =
-                    assertInstanceOf(
-                                    CaptureResult.Captured.class,
-                                    store.capture(new ByteArrayInputStream(new byte[1]), 10))
-                            .artifact();
-            artifact.close();
-            artifact.close();
-            assertEquals(new ResourceUsage(1, 10, 1), store.usage());
-            assertEquals(
-                    ReasonCode.CAPACITY_EXHAUSTED,
-                    assertInstanceOf(
-                                    CaptureResult.Denied.class,
-                                    store.capture(new ByteArrayInputStream(new byte[1]), 10))
-                            .reason());
-            failDeletion.set(false);
-            store.retryCleanup();
-            assertEquals(new ResourceUsage(0, 0, 0), store.usage());
-            assertFalse(Files.exists(artifact.path));
-        }
-    }
+	@Test
+	void deletionFailureKeepsReservationUntilRetrySucceeds() throws Exception {
+		var failDeletion = new AtomicBoolean(true);
+		try (var store = new StageStore(temp, new ResourceLimits(1, 10, 1024), path -> {
+			if (failDeletion.get())
+				throw new IOException("injected deletion failure");
+			Files.deleteIfExists(path);
+		})) {
+			var artifact = assertInstanceOf(CaptureResult.Captured.class,
+					store.capture(new ByteArrayInputStream(new byte[1]), 10)).artifact();
+			artifact.close();
+			artifact.close();
+			assertEquals(new ResourceUsage(1, 10, 1), store.usage());
+			assertEquals(ReasonCode.CAPACITY_EXHAUSTED, assertInstanceOf(CaptureResult.Denied.class,
+					store.capture(new ByteArrayInputStream(new byte[1]), 10)).reason());
+			failDeletion.set(false);
+			store.retryCleanup();
+			assertEquals(new ResourceUsage(0, 0, 0), store.usage());
+			assertFalse(Files.exists(artifact.path));
+		}
+	}
 
-    @Test
-    void failedCaptureAlsoRetainsQuotaWhenDeletionFails() throws Exception {
-        var failDeletion = new AtomicBoolean(true);
-        try (var store =
-                new StageStore(
-                        temp,
-                        new ResourceLimits(1, 10, 1024),
-                        path -> {
-                            if (failDeletion.get()) throw new IOException("injected");
-                            Files.deleteIfExists(path);
-                        })) {
-            assertEquals(
-                    ReasonCode.INPUT_TOO_LARGE,
-                    assertInstanceOf(
-                                    CaptureResult.Denied.class,
-                                    store.capture(new ByteArrayInputStream(new byte[11]), 10))
-                            .reason());
-            assertEquals(new ResourceUsage(1, 10, 1), store.usage());
-            failDeletion.set(false);
-            store.retryCleanup();
-            assertEquals(0, store.usage().reservedStagingBytes());
-        }
-    }
+	@Test
+	void failedCaptureAlsoRetainsQuotaWhenDeletionFails() throws Exception {
+		var failDeletion = new AtomicBoolean(true);
+		try (var store = new StageStore(temp, new ResourceLimits(1, 10, 1024), path -> {
+			if (failDeletion.get())
+				throw new IOException("injected");
+			Files.deleteIfExists(path);
+		})) {
+			assertEquals(ReasonCode.INPUT_TOO_LARGE, assertInstanceOf(CaptureResult.Denied.class,
+					store.capture(new ByteArrayInputStream(new byte[11]), 10)).reason());
+			assertEquals(new ResourceUsage(1, 10, 1), store.usage());
+			failDeletion.set(false);
+			store.retryCleanup();
+			assertEquals(0, store.usage().reservedStagingBytes());
+		}
+	}
 
-    @Test
-    void quotaArithmeticCannotOverflowAndReleaseIsIdempotent() {
-        var ledger = new ResourceLedger(new ResourceLimits(2, Long.MAX_VALUE, 1024));
-        var lease = ledger.reserve(Long.MAX_VALUE).orElseThrow();
-        assertTrue(ledger.reserve(1).isEmpty());
-        lease.close();
-        lease.close();
-        assertEquals(0, ledger.usage(0).operations());
-        assertTrue(ledger.reserve(Long.MAX_VALUE).isPresent());
-    }
+	@Test
+	void quotaArithmeticCannotOverflowAndReleaseIsIdempotent() {
+		var ledger = new ResourceLedger(new ResourceLimits(2, Long.MAX_VALUE, 1024));
+		var lease = ledger.reserve(Long.MAX_VALUE).orElseThrow();
+		assertTrue(ledger.reserve(1).isEmpty());
+		lease.close();
+		lease.close();
+		assertEquals(0, ledger.usage(0).operations());
+		assertTrue(ledger.reserve(Long.MAX_VALUE).isPresent());
+	}
 
-    @Test
-    void concurrentReservationsNeverOvercommit() throws Exception {
-        var ledger = new ResourceLedger(new ResourceLimits(3, 30, 1024));
-        var go = new CountDownLatch(1);
-        try (var pool = Executors.newFixedThreadPool(16)) {
-            var attempts =
-                    new ArrayList<
-                            java.util.concurrent.Future<
-                                    java.util.Optional<ResourceLedger.Reservation>>>();
-            for (int i = 0; i < 16; i++)
-                attempts.add(
-                        pool.submit(
-                                () -> {
-                                    go.await();
-                                    return ledger.reserve(10);
-                                }));
-            go.countDown();
-            var admitted = new ArrayList<ResourceLedger.Reservation>();
-            for (var attempt : attempts) attempt.get().ifPresent(admitted::add);
-            assertEquals(3, admitted.size());
-            assertEquals(30, ledger.usage(0).reservedStagingBytes());
-            admitted.forEach(ResourceLedger.Reservation::close);
-            assertEquals(0, ledger.usage(0).operations());
-        }
-    }
+	@Test
+	void concurrentReservationsNeverOvercommit() throws Exception {
+		var ledger = new ResourceLedger(new ResourceLimits(3, 30, 1024));
+		var go = new CountDownLatch(1);
+		try (var pool = Executors.newFixedThreadPool(16)) {
+			var attempts = new ArrayList<java.util.concurrent.Future<java.util.Optional<ResourceLedger.Reservation>>>();
+			for (int i = 0; i < 16; i++)
+				attempts.add(pool.submit(() -> {
+					go.await();
+					return ledger.reserve(10);
+				}));
+			go.countDown();
+			var admitted = new ArrayList<ResourceLedger.Reservation>();
+			for (var attempt : attempts)
+				attempt.get().ifPresent(admitted::add);
+			assertEquals(3, admitted.size());
+			assertEquals(30, ledger.usage(0).reservedStagingBytes());
+			admitted.forEach(ResourceLedger.Reservation::close);
+			assertEquals(0, ledger.usage(0).operations());
+		}
+	}
 
-    @Test
-    void activeLeaseSurvivesOwnerCloseAndNewLeasesAreRefused() throws Exception {
-        try (var store = new StageStore(temp, new ResourceLimits(1, 32, 1024))) {
-            var artifact =
-                    assertInstanceOf(
-                                    CaptureResult.Captured.class,
-                                    store.capture(new ByteArrayInputStream(new byte[] {7}), 32))
-                            .artifact();
-            var active = artifact.retain();
-            artifact.close();
-            assertThrows(IllegalStateException.class, artifact::retain);
-            assertEquals(32, store.usage().reservedStagingBytes());
-            try (var input = active.open()) {
-                assertEquals(7, input.read());
-            }
-            active.close();
-            assertEquals(0, store.usage().reservedStagingBytes());
-            assertFalse(Files.exists(artifact.path));
-        }
-    }
+	@Test
+	void activeLeaseSurvivesOwnerCloseAndNewLeasesAreRefused() throws Exception {
+		try (var store = new StageStore(temp, new ResourceLimits(1, 32, 1024))) {
+			var artifact = assertInstanceOf(CaptureResult.Captured.class,
+					store.capture(new ByteArrayInputStream(new byte[] { 7 }), 32)).artifact();
+			var active = artifact.retain();
+			artifact.close();
+			assertThrows(IllegalStateException.class, artifact::retain);
+			assertEquals(32, store.usage().reservedStagingBytes());
+			try (var input = active.open()) {
+				assertEquals(7, input.read());
+			}
+			active.close();
+			assertEquals(0, store.usage().reservedStagingBytes());
+			assertFalse(Files.exists(artifact.path));
+		}
+	}
 }

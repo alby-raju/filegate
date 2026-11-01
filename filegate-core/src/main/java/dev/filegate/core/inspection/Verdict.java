@@ -17,12 +17,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.inspection;
 
 /** Approval establishes only the checks declared by the policy's coverage. */
 public enum Verdict {
-    APPROVED,
-    REJECTED,
-    INCOMPLETE
+	APPROVED, REJECTED, INCOMPLETE
 }

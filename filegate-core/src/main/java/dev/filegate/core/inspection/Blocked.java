@@ -17,10 +17,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.inspection;
 
 import dev.filegate.core.internal.inspection.BlockedInspection;
 
 /** A blocking result exposes evidence, never an approved-content handle. */
-public sealed interface Blocked extends Inspection permits BlockedInspection {}
+public sealed interface Blocked extends Inspection permits BlockedInspection {
+}

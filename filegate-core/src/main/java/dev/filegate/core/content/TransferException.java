@@ -17,23 +17,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.content;
 
 import java.io.IOException;
 
-/** A failed copy grants no receipt. The host must abort its private destination. */
+/**
+ * A failed copy grants no receipt. The host must abort its private destination.
+ */
 public final class TransferException extends IOException {
-    private static final long serialVersionUID = 1L;
-    private final TransferFailure failure;
+	private static final long serialVersionUID = 1L;
+	private final TransferFailure failure;
 
-    public TransferException(TransferFailure failure) {
-        // Do not leak content paths or downstream exception messages.
-        super(failure.name());
-        this.failure = failure;
-    }
+	public TransferException(TransferFailure failure) {
+		// Do not leak content paths or downstream exception messages.
+		super(failure.name());
+		this.failure = failure;
+	}
 
-    public TransferFailure failure() {
-        return failure;
-    }
+	public TransferFailure failure() {
+		return failure;
+	}
 }

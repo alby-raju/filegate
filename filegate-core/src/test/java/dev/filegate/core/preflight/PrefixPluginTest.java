@@ -17,10 +17,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.preflight;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.ByteArrayInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import dev.filegate.core.FileGate;
 import dev.filegate.core.inspection.CheckEvidence;
@@ -39,176 +51,118 @@ import dev.filegate.core.spi.InspectionCheck;
 import dev.filegate.core.spi.PrefixInspectionCheck;
 import dev.filegate.core.testing.TestChecks;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
-import java.io.ByteArrayInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
-
 class PrefixPluginTest {
-    @TempDir Path temporary;
+	@TempDir
+	Path temporary;
 
-    @Test
-    void independentPrefixPluginsRunAtTheirDeclaredBoundaries() throws Exception {
-        var consumed = new AtomicInteger();
-        var source =
-                new ByteArrayInputStream(new byte[64]) {
-                    @Override
-                    public synchronized int read(byte[] bytes, int offset, int length) {
-                        int read = super.read(bytes, offset, length);
-                        if (read > 0) consumed.addAndGet(read);
-                        return read;
-                    }
-                };
-        var first =
-                prefix(
-                        "a.prefix",
-                        4,
-                        (bytes, claims) -> {
-                            assertEquals(4, consumed.get());
-                            assertEquals(4, bytes.length);
-                            return CheckEvidence.pass("a.prefix");
-                        });
-        var second =
-                prefix(
-                        "b.prefix",
-                        8,
-                        (bytes, claims) -> {
-                            assertEquals(8, consumed.get());
-                            assertEquals(8, bytes.length);
-                            return CheckEvidence.pass("b.prefix");
-                        });
-        try (var gate =
-                        gate(
-                                first,
-                                second,
-                                TestChecks.check(
-                                        "z.content",
-                                        input -> {
-                                            assertEquals(64, input.identity().length());
-                                            return CheckEvidence.pass("z.content");
-                                        }));
-                var result = gate.inspect(source, InputClaims.NONE)) {
-            assertEquals(Verdict.APPROVED, result.report().verdict());
-            assertEquals(3, result.report().evidence().size());
-        }
-    }
+	@Test
+	void independentPrefixPluginsRunAtTheirDeclaredBoundaries() throws Exception {
+		var consumed = new AtomicInteger();
+		var source = new ByteArrayInputStream(new byte[64]) {
+			@Override
+			public synchronized int read(byte[] bytes, int offset, int length) {
+				int read = super.read(bytes, offset, length);
+				if (read > 0)
+					consumed.addAndGet(read);
+				return read;
+			}
+		};
+		var first = prefix("a.prefix", 4, (bytes, claims) -> {
+			assertEquals(4, consumed.get());
+			assertEquals(4, bytes.length);
+			return CheckEvidence.pass("a.prefix");
+		});
+		var second = prefix("b.prefix", 8, (bytes, claims) -> {
+			assertEquals(8, consumed.get());
+			assertEquals(8, bytes.length);
+			return CheckEvidence.pass("b.prefix");
+		});
+		try (var gate = gate(first, second, TestChecks.check("z.content", input -> {
+			assertEquals(64, input.identity().length());
+			return CheckEvidence.pass("z.content");
+		})); var result = gate.inspect(source, InputClaims.NONE)) {
+			assertEquals(Verdict.APPROVED, result.report().verdict());
+			assertEquals(3, result.report().evidence().size());
+		}
+	}
 
-    @Test
-    void invalidPrefixEvidenceBlocksAndSkipsFullContentInspection() throws Exception {
-        var broken = prefix("a.prefix", 4, (bytes, claims) -> CheckEvidence.pass("foreign"));
-        try (var gate =
-                        gate(
-                                broken,
-                                TestChecks.check(
-                                        "z.content",
-                                        input -> {
-                                            fail("Invalid preflight evidence must stop capture");
-                                            return null;
-                                        }));
-                var result =
-                        gate.inspect(new ByteArrayInputStream(new byte[64]), InputClaims.NONE)) {
-            assertEquals(Verdict.INCOMPLETE, result.report().verdict());
-            assertTrue(result.report().reasons().contains(ReasonCode.INVALID_EVIDENCE));
-            assertEquals(CheckStatus.NOT_RUN, result.report().evidence().getLast().status());
-            assertEquals(0, gate.resourceUsage().reservedStagingBytes());
-        }
-    }
+	@Test
+	void invalidPrefixEvidenceBlocksAndSkipsFullContentInspection() throws Exception {
+		var broken = prefix("a.prefix", 4, (bytes, claims) -> CheckEvidence.pass("foreign"));
+		try (var gate = gate(broken, TestChecks.check("z.content", input -> {
+			fail("Invalid preflight evidence must stop capture");
+			return null;
+		})); var result = gate.inspect(new ByteArrayInputStream(new byte[64]), InputClaims.NONE)) {
+			assertEquals(Verdict.INCOMPLETE, result.report().verdict());
+			assertTrue(result.report().reasons().contains(ReasonCode.INVALID_EVIDENCE));
+			assertEquals(CheckStatus.NOT_RUN, result.report().evidence().getLast().status());
+			assertEquals(0, gate.resourceUsage().reservedStagingBytes());
+		}
+	}
 
-    @Test
-    void invalidPrefixBudgetFailsBeforeCreatingStaging() throws Exception {
-        var broken =
-                prefix(
-                        "a.prefix",
-                        PrefixInspectionCheck.MAX_PREFIX_BYTES + 1,
-                        (bytes, claims) -> CheckEvidence.pass("a.prefix"));
-        assertThrows(
-                IllegalArgumentException.class,
-                () ->
-                        gate(
-                                broken,
-                                TestChecks.check(
-                                        "z.content", input -> CheckEvidence.pass("z.content"))));
-        try (var files = Files.list(temporary)) {
-            assertEquals(0, files.count());
-        }
-    }
+	@Test
+	void invalidPrefixBudgetFailsBeforeCreatingStaging() throws Exception {
+		var broken = prefix("a.prefix", PrefixInspectionCheck.MAX_PREFIX_BYTES + 1,
+				(bytes, claims) -> CheckEvidence.pass("a.prefix"));
+		assertThrows(IllegalArgumentException.class,
+				() -> gate(broken, TestChecks.check("z.content", input -> CheckEvidence.pass("z.content"))));
+		try (var files = Files.list(temporary)) {
+			assertEquals(0, files.count());
+		}
+	}
 
-    @Test
-    void registrationFreezesPrefixMetadataForExistingPlans() throws Exception {
-        var declared = new AtomicInteger(4);
-        var prefix =
-                new PrefixInspectionCheck() {
-                    @Override
-                    public CheckDescriptor descriptor() {
-                        return new CheckDescriptor(
-                                "a.prefix",
-                                "1",
-                                "test-only",
-                                ExecutionMode.EMBEDDED,
-                                CheckKind.PREFLIGHT);
-                    }
+	@Test
+	void registrationFreezesPrefixMetadataForExistingPlans() throws Exception {
+		var declared = new AtomicInteger(4);
+		var prefix = new PrefixInspectionCheck() {
+			@Override
+			public CheckDescriptor descriptor() {
+				return new CheckDescriptor("a.prefix", "1", "test-only", ExecutionMode.EMBEDDED, CheckKind.PREFLIGHT);
+			}
 
-                    @Override
-                    public int prefixBytes() {
-                        return declared.get();
-                    }
+			@Override
+			public int prefixBytes() {
+				return declared.get();
+			}
 
-                    @Override
-                    public CheckEvidence inspectPrefix(byte[] bytes, InputClaims claims) {
-                        assertEquals(4, bytes.length);
-                        return CheckEvidence.pass("a.prefix");
-                    }
-                };
-        try (var gate =
-                gate(
-                        prefix,
-                        TestChecks.check("z.content", input -> CheckEvidence.pass("z.content")))) {
-            declared.set(PrefixInspectionCheck.MAX_PREFIX_BYTES + 1);
-            try (var result =
-                    gate.inspect(new ByteArrayInputStream(new byte[64]), InputClaims.NONE)) {
-                assertEquals(Verdict.APPROVED, result.report().verdict());
-            }
-        }
-    }
+			@Override
+			public CheckEvidence inspectPrefix(byte[] bytes, InputClaims claims) {
+				assertEquals(4, bytes.length);
+				return CheckEvidence.pass("a.prefix");
+			}
+		};
+		try (var gate = gate(prefix, TestChecks.check("z.content", input -> CheckEvidence.pass("z.content")))) {
+			declared.set(PrefixInspectionCheck.MAX_PREFIX_BYTES + 1);
+			try (var result = gate.inspect(new ByteArrayInputStream(new byte[64]), InputClaims.NONE)) {
+				assertEquals(Verdict.APPROVED, result.report().verdict());
+			}
+		}
+	}
 
-    private FileGate gate(InspectionCheck... checks) throws Exception {
-        var installed = List.of(checks);
-        var descriptors = installed.stream().map(InspectionCheck::descriptor).toList();
-        var policy =
-                CompiledPolicy.compile(
-                        new PolicySpec(
-                                "prefix-test",
-                                Use.DOWNLOAD,
-                                128,
-                                ExecutionMode.EMBEDDED,
-                                descriptors.stream().map(CheckDescriptor::id).toList()),
-                        descriptors);
-        return FileGate.open(temporary, new ResourceLimits(1, 128, 1024), policy, installed);
-    }
+	private FileGate gate(InspectionCheck... checks) throws Exception {
+		var installed = List.of(checks);
+		var descriptors = installed.stream().map(InspectionCheck::descriptor).toList();
+		var policy = CompiledPolicy.compile(new PolicySpec("prefix-test", Use.DOWNLOAD, 128, ExecutionMode.EMBEDDED,
+				descriptors.stream().map(CheckDescriptor::id).toList()), descriptors);
+		return FileGate.open(temporary, new ResourceLimits(1, 128, 1024), policy, installed);
+	}
 
-    private PrefixInspectionCheck prefix(
-            String id, int bytes, BiFunction<byte[], InputClaims, CheckEvidence> body) {
-        return new PrefixInspectionCheck() {
-            @Override
-            public CheckDescriptor descriptor() {
-                return new CheckDescriptor(
-                        id, "1", "test-only", ExecutionMode.EMBEDDED, CheckKind.PREFLIGHT);
-            }
+	private PrefixInspectionCheck prefix(String id, int bytes, BiFunction<byte[], InputClaims, CheckEvidence> body) {
+		return new PrefixInspectionCheck() {
+			@Override
+			public CheckDescriptor descriptor() {
+				return new CheckDescriptor(id, "1", "test-only", ExecutionMode.EMBEDDED, CheckKind.PREFLIGHT);
+			}
 
-            @Override
-            public int prefixBytes() {
-                return bytes;
-            }
+			@Override
+			public int prefixBytes() {
+				return bytes;
+			}
 
-            @Override
-            public CheckEvidence inspectPrefix(byte[] prefix, InputClaims claims) {
-                return body.apply(prefix, claims);
-            }
-        };
-    }
+			@Override
+			public CheckEvidence inspectPrefix(byte[] prefix, InputClaims claims) {
+				return body.apply(prefix, claims);
+			}
+		};
+	}
 }

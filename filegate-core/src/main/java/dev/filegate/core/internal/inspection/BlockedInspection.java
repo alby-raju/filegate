@@ -17,7 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.inspection;
 
 import dev.filegate.core.inspection.Blocked;
@@ -25,17 +24,18 @@ import dev.filegate.core.inspection.InspectionReport;
 
 /** A blocking result exposes evidence, never an approved-content handle. */
 public final class BlockedInspection implements Blocked {
-    private final InspectionReport report;
+	private final InspectionReport report;
 
-    public BlockedInspection(InspectionReport report) {
-        this.report = report;
-    }
+	public BlockedInspection(InspectionReport report) {
+		this.report = report;
+	}
 
-    @Override
-    public InspectionReport report() {
-        return report;
-    }
+	@Override
+	public InspectionReport report() {
+		return report;
+	}
 
-    @Override
-    public void close() {}
+	@Override
+	public void close() {
+	}
 }

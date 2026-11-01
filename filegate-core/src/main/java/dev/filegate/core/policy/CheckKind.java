@@ -17,11 +17,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.policy;
 
 /** Preflight recognition is never sufficient for content approval. */
 public enum CheckKind {
-    PREFLIGHT,
-    CONTENT
+	PREFLIGHT, CONTENT
 }

@@ -17,20 +17,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.crypto;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public final class Sha256 {
-    private Sha256() {}
+	private Sha256() {
+	}
 
-    public static MessageDigest newDigest() {
-        try {
-            return MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException impossible) {
-            throw new IllegalStateException(impossible);
-        }
-    }
+	public static MessageDigest newDigest() {
+		try {
+			return MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException impossible) {
+			throw new IllegalStateException(impossible);
+		}
+	}
 }

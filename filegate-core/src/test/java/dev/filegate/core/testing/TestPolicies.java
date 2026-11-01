@@ -17,23 +17,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.testing;
+
+import java.util.List;
 
 import dev.filegate.core.policy.CompiledPolicy;
 import dev.filegate.core.policy.ExecutionMode;
 import dev.filegate.core.policy.PolicySpec;
 import dev.filegate.core.policy.Use;
 
-import java.util.List;
-
 public final class TestPolicies {
-    private TestPolicies() {}
+	private TestPolicies() {
+	}
 
-    public static CompiledPolicy policy(long limit, String... ids) {
-        return CompiledPolicy.compile(
-                new PolicySpec(
-                        "test-policy", Use.DOWNLOAD, limit, ExecutionMode.EMBEDDED, List.of(ids)),
-                List.of(ids).stream().map(TestChecks::descriptor).toList());
-    }
+	public static CompiledPolicy policy(long limit, String... ids) {
+		return CompiledPolicy.compile(
+				new PolicySpec("test-policy", Use.DOWNLOAD, limit, ExecutionMode.EMBEDDED, List.of(ids)),
+				List.of(ids).stream().map(TestChecks::descriptor).toList());
+	}
 }

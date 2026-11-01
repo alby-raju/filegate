@@ -17,7 +17,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.content;
 
 import dev.filegate.core.internal.content.VerifiedTransferReceipt;
@@ -25,19 +24,19 @@ import dev.filegate.core.policy.Use;
 
 /** Transfer evidence, not a portable authorization or persistence token. */
 public sealed interface TransferReceipt permits VerifiedTransferReceipt {
-    String transferId();
+	String transferId();
 
-    ArtifactIdentity artifact();
+	ArtifactIdentity artifact();
 
-    String policyFingerprint();
+	String policyFingerprint();
 
-    Use use();
+	Use use();
 
-    String pendingDestinationId();
+	String pendingDestinationId();
 
-    default void validateFor(String destinationId, Use destinationUse) {
-        if (!pendingDestinationId().equals(destinationId) || use() != destinationUse) {
-            throw new IllegalArgumentException("Receipt does not belong to destination and use");
-        }
-    }
+	default void validateFor(String destinationId, Use destinationUse) {
+		if (!pendingDestinationId().equals(destinationId) || use() != destinationUse) {
+			throw new IllegalArgumentException("Receipt does not belong to destination and use");
+		}
+	}
 }

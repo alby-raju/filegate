@@ -17,16 +17,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.validation;
 
 public final class Identifiers {
-    private Identifiers() {}
+	private Identifiers() {
+	}
 
-    public static String requireToken(String value) {
-        if (value == null || !value.matches("[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}")) {
-            throw new IllegalArgumentException("Expected a bounded ASCII identifier");
-        }
-        return value;
-    }
+	public static String requireToken(String value) {
+		if (value == null || !value.matches("[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}")) {
+			throw new IllegalArgumentException("Expected a bounded ASCII identifier");
+		}
+		return value;
+	}
 }

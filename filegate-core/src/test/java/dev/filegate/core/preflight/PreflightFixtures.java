@@ -17,13 +17,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.preflight;
 
 final class PreflightFixtures {
-    private PreflightFixtures() {}
+	private PreflightFixtures() {
+	}
 
-    static byte[] png() {
-        return new byte[] {(byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10};
-    }
+	static byte[] png() {
+		return new byte[] { (byte) 0x89, 'P', 'N', 'G', 13, 10, 26, 10 };
+	}
 }

@@ -17,19 +17,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.content;
 
-/** Exact captured content identity. Avoid including this in ordinary application logs. */
+/**
+ * Exact captured content identity. Avoid including this in ordinary application
+ * logs.
+ */
 public record ArtifactIdentity(long length, String sha256) {
-    public ArtifactIdentity {
-        if (length < 0 || sha256 == null || !sha256.matches("[0-9a-f]{64}")) {
-            throw new IllegalArgumentException("Invalid content identity");
-        }
-    }
+	public ArtifactIdentity {
+		if (length < 0 || sha256 == null || !sha256.matches("[0-9a-f]{64}")) {
+			throw new IllegalArgumentException("Invalid content identity");
+		}
+	}
 
-    @Override
-    public String toString() {
-        return "ArtifactIdentity[length=" + length + "]";
-    }
+	@Override
+	public String toString() {
+		return "ArtifactIdentity[length=" + length + "]";
+	}
 }

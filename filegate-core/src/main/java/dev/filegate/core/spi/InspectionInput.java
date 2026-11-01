@@ -17,24 +17,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.spi;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import dev.filegate.core.content.ArtifactIdentity;
 import dev.filegate.core.inspection.InputClaims;
 import dev.filegate.core.internal.inspection.ScopedInspectionInput;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-/** Inspector-scoped read access with at most one open stream and no stage path. */
+/**
+ * Inspector-scoped read access with at most one open stream and no stage path.
+ */
 public sealed interface InspectionInput extends AutoCloseable permits ScopedInspectionInput {
-    ArtifactIdentity identity();
+	ArtifactIdentity identity();
 
-    InputClaims claims();
+	InputClaims claims();
 
-    InputStream openStream() throws IOException;
+	InputStream openStream() throws IOException;
 
-    @Override
-    void close() throws IOException;
+	@Override
+	void close() throws IOException;
 }

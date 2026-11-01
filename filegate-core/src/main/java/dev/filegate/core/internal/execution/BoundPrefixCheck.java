@@ -17,21 +17,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.execution;
+
+import java.util.Objects;
 
 import dev.filegate.core.internal.validation.Identifiers;
 import dev.filegate.core.spi.PrefixInspectionCheck;
 
-import java.util.Objects;
-
 /** Frozen registration metadata shared by policy binding and capture. */
 public record BoundPrefixCheck(String id, int bytes, PrefixInspectionCheck implementation) {
-    public BoundPrefixCheck {
-        id = Identifiers.requireToken(id);
-        Objects.requireNonNull(implementation, "implementation");
-        if (bytes < 1 || bytes > PrefixInspectionCheck.MAX_PREFIX_BYTES) {
-            throw new IllegalArgumentException("Invalid bounded prefix capability");
-        }
-    }
+	public BoundPrefixCheck {
+		id = Identifiers.requireToken(id);
+		Objects.requireNonNull(implementation, "implementation");
+		if (bytes < 1 || bytes > PrefixInspectionCheck.MAX_PREFIX_BYTES) {
+			throw new IllegalArgumentException("Invalid bounded prefix capability");
+		}
+	}
 }

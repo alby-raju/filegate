@@ -17,31 +17,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.internal.capture;
-
-import dev.filegate.core.inspection.CheckEvidence;
-import dev.filegate.core.inspection.ReasonCode;
 
 import java.util.List;
 import java.util.Objects;
 
-/** Capture either owns sealed bytes or reports a blocking reason; never a nullable tuple. */
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.inspection.ReasonCode;
+
+/**
+ * Capture either owns sealed bytes or reports a blocking reason; never a
+ * nullable tuple.
+ */
 public sealed interface CaptureResult {
-    List<CheckEvidence> evidence();
+	List<CheckEvidence> evidence();
 
-    record Captured(CapturedArtifact artifact, List<CheckEvidence> evidence)
-            implements CaptureResult {
-        public Captured {
-            Objects.requireNonNull(artifact, "artifact");
-            evidence = List.copyOf(evidence);
-        }
-    }
+	record Captured(CapturedArtifact artifact, List<CheckEvidence> evidence) implements CaptureResult {
+		public Captured {
+			Objects.requireNonNull(artifact, "artifact");
+			evidence = List.copyOf(evidence);
+		}
+	}
 
-    record Denied(ReasonCode reason, List<CheckEvidence> evidence) implements CaptureResult {
-        public Denied {
-            Objects.requireNonNull(reason, "reason");
-            evidence = List.copyOf(evidence);
-        }
-    }
+	record Denied(ReasonCode reason, List<CheckEvidence> evidence) implements CaptureResult {
+		public Denied {
+			Objects.requireNonNull(reason, "reason");
+			evidence = List.copyOf(evidence);
+		}
+	}
 }

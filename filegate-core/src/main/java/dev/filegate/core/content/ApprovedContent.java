@@ -17,23 +17,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package dev.filegate.core.content;
+
+import java.io.OutputStream;
 
 import dev.filegate.core.internal.content.VerifiedContent;
 import dev.filegate.core.policy.Use;
 
-import java.io.OutputStream;
-
-/** Scoped capability for approved bytes; no raw stage path or constructor is public. */
+/**
+ * Scoped capability for approved bytes; no raw stage path or constructor is
+ * public.
+ */
 public sealed interface ApprovedContent permits VerifiedContent {
-    ArtifactIdentity identity();
+	ArtifactIdentity identity();
 
-    Use use();
+	Use use();
 
-    String policyFingerprint();
+	String policyFingerprint();
 
-    /** Copies to a private pending destination; the caller owns destination finalization and abort. */
-    TransferReceipt copyTo(OutputStream output, String pendingDestinationId, Use destinationUse)
-            throws TransferException;
+	/**
+	 * Copies to a private pending destination; the caller owns destination
+	 * finalization and abort.
+	 */
+	TransferReceipt copyTo(OutputStream output, String pendingDestinationId, Use destinationUse)
+			throws TransferException;
 }
