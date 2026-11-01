@@ -63,3 +63,17 @@ jobs:
         run: |
           export FILEGATE_DOCKER_IMAGE=$(cat /tmp/filegate-worker-image)
           mvn -o -B -ntp verify
+      - name: Generate Maven runtime SBOM
+        if: runner.os == 'Linux'
+        run: scripts/ci-verify.sh -Psbom org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom
+      - name: Verify artifact notices and inventory
+        if: runner.os == 'Linux'
+        run: python3 scripts/check-distribution.py
+      - name: Preserve Maven runtime SBOM
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: maven-runtime-sbom
+          path: target/bom.json
+          if-no-files-found: error
+          retention-days: 30

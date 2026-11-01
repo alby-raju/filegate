@@ -108,4 +108,27 @@ limitations under the License.
 			</plugins>
 		</pluginManagement>
 	</build>
+	<profiles>
+		<profile>
+			<id>sbom</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.cyclonedx</groupId>
+						<artifactId>cyclonedx-maven-plugin</artifactId>
+						<version>2.9.3</version>
+						<inherited>false</inherited>
+						<configuration>
+							<schemaVersion>1.6</schemaVersion>
+							<projectType>library</projectType>
+							<includeTestScope>false</includeTestScope>
+							<outputReactorProjects>false</outputReactorProjects>
+							<outputFormat>json</outputFormat>
+							<skipAttach>true</skipAttach>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

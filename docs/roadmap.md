@@ -226,3 +226,11 @@ preparation, storage qualification, security review and adoption evidence.
   existing verified POSIX pending-object example. The Linux-only test verifies
   exact persisted PNG/JPEG bytes, no publication for blocked input and survival of
   committed objects after gate/runtime close. Native builds skip this test.
+
+- Local POSIX evidence: [CI run 41325093485](https://github.com/alby-raju/filegate/actions/runs/41325093485)
+  passes on Linux/macOS for the selected inspection-only workflow, including
+  isolated image publication and persisted-byte verification.
+- M5.3 distribution preparation: pinned an opt-in CycloneDX runtime-inventory
+  profile, generated the five-artifact SBOM, and added packaged-notice/module
+  membership checks plus CI artifact retention. Container/JDK inventory, release
+  identity and production qualification remain open; no artifacts are published.
