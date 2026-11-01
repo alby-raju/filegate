@@ -188,4 +188,22 @@ class RestrictedSpreadsheetTest {
 				"<cp:unsupported>payload</cp:unsupported></cp:coreProperties>")));
 	}
 
+	@Test
+	void numericOnlyWorkbookCanBeInspectedFromReadOnlyWorkerInput() throws Exception {
+		byte[] original;
+		try (var book = new XSSFWorkbook(); var bytes = new ByteArrayOutputStream()) {
+			var sheet = book.createSheet("Sheet1");
+			sheet.createRow(0).createCell(0).setCellValue(5);
+			sheet.createRow(1).createCell(0).setCellValue(7);
+			sheet.getRow(0).createCell(1).setCellFormula("SUM(A1:A2)");
+			book.write(bytes);
+			original = bytes.toByteArray();
+		}
+		Path captured = temp.resolve("readonly.bin");
+		Files.write(captured, original);
+		Files.setPosixFilePermissions(captured, java.nio.file.attribute.PosixFilePermissions.fromString("r--------"));
+		assertEquals(1, new RestrictedSpreadsheetInspector(profile()).inspect(captured).sheets());
+		assertArrayEquals(original, Files.readAllBytes(captured));
+	}
+
 }

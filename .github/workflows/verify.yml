@@ -63,6 +63,24 @@ jobs:
         run: |
           export FILEGATE_DOCKER_IMAGE=$(cat /tmp/filegate-worker-image)
           mvn -o -B -ntp verify
+      - name: Diagnose synthetic spreadsheet worker failure
+        if: failure() && runner.os == 'Linux'
+        shell: bash
+        run: |
+          if test -f filegate-examples/target/synthetic-spreadsheet-request.bin; then
+            image=$(cat /tmp/filegate-worker-image)
+            trap 'docker rm -f filegate-synthetic-diagnostic >/dev/null 2>&1 || true' EXIT
+            timeout 45s docker run --name filegate-synthetic-diagnostic --rm --network=none --read-only \
+              --user 65534:65534 --cap-drop=ALL --security-opt=no-new-privileges=true --ipc=none --cgroupns=private \
+              --memory=536870912 --memory-swap=536870912 --cpu-period=100000 --cpu-quota=100000 --pids-limit=128 \
+              --ulimit=core=0:0 --ulimit=nofile=64:64 --tmpfs /tmp:rw,noexec,nosuid,nodev,size=67108864,mode=1777 \
+              --workdir=/tmp --env=HOME=/tmp --entrypoint=java -i "$image" \
+              -Xmx268435456 -XX:-UsePerfData -cp '/app/*' \
+              dev.filegate.spreadsheets.worker.internal.SpreadsheetWorkerMain \
+              536870912 67108864 128 1000 1048576 8388608 2097152 128 64 100000 2097152 \
+              8 1000 10000 1000 100 8192 4096 32767 HTTPS_ONLY \
+              < filegate-examples/target/synthetic-spreadsheet-request.bin > /tmp/synthetic-spreadsheet-response.bin
+          fi
       - name: Generate Maven runtime SBOM
         if: runner.os == 'Linux'
         run: scripts/ci-verify.sh -Psbom org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom

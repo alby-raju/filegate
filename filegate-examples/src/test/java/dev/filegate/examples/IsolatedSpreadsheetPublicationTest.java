@@ -86,8 +86,17 @@ class IsolatedSpreadsheetPublicationTest {
 					ExecutionMode.ISOLATED, List.of("xlsx.basic")), List.of(check.descriptor()));
 			try (var gate = FileGate.open(temp, new ResourceLimits(1, 2 * 1024 * 1024, 8192), policy, List.of(check))) {
 				byte[] valid = spreadsheet("SUM(A1:A2)");
+				// Synthetic regression input only; never copy real inspected files into CI diagnostics.
+				try (var diagnostic = Files.newOutputStream(Path.of("target/synthetic-spreadsheet-request.bin"))) {
+					var identity = new dev.filegate.core.content.ArtifactIdentity(valid.length,
+							java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(valid)));
+					dev.filegate.worker.protocol.WorkerProtocol.writeRequest(diagnostic,
+							new dev.filegate.worker.protocol.ProtocolBinding(java.util.UUID.randomUUID(), identity,
+									policy.fingerprint(), "basic-xlsx-worker-v1-poi-6.0.0", List.of("xlsx.basic")));
+					diagnostic.write(valid);
+				}
 				try (var result = gate.inspect(new ByteArrayInputStream(valid), InputClaims.NONE)) {
-					var approved = assertInstanceOf(Approved.class, result, () -> result.report().toString());
+					var approved = assertInstanceOf(Approved.class, result, () -> result.report().verdict() + " " + result.report().evidence() + " " + result.report().reasons());
 					Path stored = PublicationExample.publish(approved.content(), storage);
 					assertArrayEquals(valid, Files.readAllBytes(stored));
 				}
