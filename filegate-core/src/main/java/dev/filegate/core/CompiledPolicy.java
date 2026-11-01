@@ -50,6 +50,7 @@ public final class CompiledPolicy {
         if (resolved.stream().noneMatch(check -> check.kind() == CheckKind.CONTENT)) {
             throw new IllegalArgumentException("Preflight cannot replace mandatory content inspection");
         }
+        resolved.sort(java.util.Comparator.comparing(CheckDescriptor::kind).thenComparing(CheckDescriptor::id));
         return new CompiledPolicy(spec, resolved);
     }
 

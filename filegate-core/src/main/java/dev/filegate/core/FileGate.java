@@ -50,15 +50,23 @@ public final class FileGate implements AutoCloseable {
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(claims, "claims");
         CompiledPolicy snapshot = policy.get();
-        var capture = stages.capture(source, snapshot.maxInputBytes());
+        PreflightCheck preflight = snapshot.checks().stream().map(check -> checks.get(check.id()))
+                .filter(PreflightCheck.class::isInstance).map(PreflightCheck.class::cast).findFirst().orElse(null);
+        var capture = stages.capture(source, snapshot.maxInputBytes(), claims, preflight);
         if (capture.failure() != null) {
-            return new Blocked(EvidenceAggregator.aggregate(snapshot, List.of(), List.of(capture.failure())));
+            return new Blocked(EvidenceAggregator.aggregate(snapshot,
+                    capture.preflightEvidence() == null ? List.of() : List.of(capture.preflightEvidence()),
+                    List.of(capture.failure())));
         }
         CapturedArtifact artifact = capture.artifact();
         boolean transferred = false;
         try {
             var evidence = new ArrayList<CheckEvidence>();
             for (CheckDescriptor descriptor : snapshot.checks()) {
+                if (capture.preflightEvidence() != null && descriptor.id().equals(capture.preflightEvidence().checkId())) {
+                    evidence.add(capture.preflightEvidence());
+                    continue;
+                }
                 CheckEvidence result;
                 try (var input = new InspectionInput(artifact, claims)) {
                     if (Thread.currentThread().isInterrupted()) throw new InterruptedException();

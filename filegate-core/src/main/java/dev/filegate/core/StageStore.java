@@ -11,7 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 final class StageStore implements AutoCloseable {
     @FunctionalInterface interface Deleter { void delete(Path path) throws IOException; }
-    record Capture(CapturedArtifact artifact, ReasonCode failure) {}
+    record Capture(CapturedArtifact artifact, ReasonCode failure, CheckEvidence preflightEvidence) {
+        Capture(CapturedArtifact artifact, ReasonCode failure) { this(artifact, failure, null); }
+    }
 
     private final Path root;
     private final ResourceLimits limits;
@@ -35,6 +37,10 @@ final class StageStore implements AutoCloseable {
     }
 
     Capture capture(InputStream source, long maxBytes) {
+        return capture(source, maxBytes, InputClaims.NONE, null);
+    }
+
+    Capture capture(InputStream source, long maxBytes, InputClaims claims, PreflightCheck preflight) {
         ResourceLedger.Reservation reservation;
         synchronized (this) {
             if (closed) throw new IllegalStateException("Gate is closed");
@@ -46,12 +52,15 @@ final class StageStore implements AutoCloseable {
         Path path = null;
         CapturedArtifact captured = null;
         ReasonCode failure = null;
+        CheckEvidence preflightEvidence = null;
         try {
             path = Files.createTempFile(root, "artifact-", ".stage",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")));
             var digest = Digests.sha256();
             long count = 0;
             byte[] buffer = new byte[limits.captureBufferBytes()];
+            byte[] prefix = new byte[CandidateRecognition.PREFIX_BYTES];
+            int prefixLength = 0;
             try (var output = Files.newOutputStream(path)) {
                 while (true) {
                     if (Thread.currentThread().isInterrupted()) {
@@ -61,18 +70,44 @@ final class StageStore implements AutoCloseable {
                     // Read at most one byte beyond the policy limit, without overflow.
                     int wanted = (int) Math.min(buffer.length,
                             maxBytes - count >= buffer.length ? buffer.length : maxBytes - count + 1);
+                    if (preflight != null && preflightEvidence == null) {
+                        wanted = Math.min(wanted, prefix.length - prefixLength);
+                    }
                     int read = source.read(buffer, 0, wanted);
-                    if (read == -1) break;
+                    if (read == -1) {
+                        if (preflight != null && preflightEvidence == null) {
+                            preflightEvidence = preflight.evaluate(java.util.Arrays.copyOf(prefix, prefixLength), claims);
+                            if (preflightEvidence.status() != CheckStatus.PASS) failure = preflightEvidence.reason();
+                        }
+                        break;
+                    }
                     if (read == 0) {
                         // Defensive progress for broken streams; host still owns transport timeouts.
                         int next = source.read();
-                        if (next == -1) break;
+                        if (next == -1) {
+                            if (preflight != null && preflightEvidence == null) {
+                                preflightEvidence = preflight.evaluate(java.util.Arrays.copyOf(prefix, prefixLength), claims);
+                                if (preflightEvidence.status() != CheckStatus.PASS) failure = preflightEvidence.reason();
+                            }
+                            break;
+                        }
                         buffer[0] = (byte) next;
                         read = 1;
                     }
                     if (read > maxBytes - count) {
                         failure = ReasonCode.INPUT_TOO_LARGE;
                         break;
+                    }
+                    if (preflight != null && preflightEvidence == null) {
+                        System.arraycopy(buffer, 0, prefix, prefixLength, read);
+                        prefixLength += read;
+                        if (prefixLength == prefix.length) {
+                            preflightEvidence = preflight.evaluate(prefix, claims);
+                            if (preflightEvidence.status() != CheckStatus.PASS) {
+                                failure = preflightEvidence.reason();
+                                break;
+                            }
+                        }
                     }
                     output.write(buffer, 0, read);
                     digest.update(buffer, 0, read);
@@ -101,7 +136,7 @@ final class StageStore implements AutoCloseable {
             synchronized (this) { captures--; }
             removeDeletedAndMaybeRoot();
         }
-        return new Capture(captured, failure);
+        return new Capture(captured, failure, preflightEvidence);
     }
 
     boolean delete(Path path) {

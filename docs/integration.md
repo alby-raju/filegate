@@ -15,8 +15,8 @@ descriptor equality and that the input allowance fits the staging envelope.
 
 The current configuration is typed Java, with bounded identifiers and at most 64
 mandatory checks. There is no YAML/JSON loader and no unchecked guarantee string.
-Required checks are canonicalized by identifier; select identifiers accordingly
-for this executor's deterministic sequential order. Dependencies and cost-aware
+Preflight checks run first; content checks are canonicalized by identifier for
+this executor's deterministic sequential order. Dependencies and cost-aware
 ordering belong in later inspection profiles.
 
 `reload` accepts a fully compiled snapshot against the same installed registry.
@@ -109,3 +109,12 @@ before framework spooling, serving headers, origin/viewer isolation, intended-us
 restrictions and retention. Ordinary logs should avoid filenames, content digests,
 parser messages and other sensitive content. Reports list host obligations
 separately from completed checks.
+
+## Bounded preflight
+
+`PreflightCheck` accepts explicit candidate and claim rules. Built-in capture
+recognizes at most eight bytes and can reject before reading the rest. Signature
+candidates describe PNG/JPEG/PDF/ZIP only; ZIP does not identify DOCX or XLSX, and
+no check establishes polyglot absence. A preflight-only policy cannot compile.
+Claim rules are fingerprint-bound; required filenames/MIME types must be
+consistent when selected. Format support still requires a real content profile.
