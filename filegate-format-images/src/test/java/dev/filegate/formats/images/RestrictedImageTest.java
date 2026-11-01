@@ -20,13 +20,6 @@
 
 package dev.filegate.formats.images;
 
-import dev.filegate.core.inspection.CheckStatus;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -37,6 +30,14 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.zip.CRC32;
 import java.util.zip.DeflaterOutputStream;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import dev.filegate.core.inspection.CheckStatus;
 
 import static org.junit.jupiter.api.Assertions.*;
 

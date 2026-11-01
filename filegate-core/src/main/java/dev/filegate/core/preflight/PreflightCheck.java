@@ -20,24 +20,22 @@
 
 package dev.filegate.core.preflight;
 
-import dev.filegate.core.inspection.CheckEvidence;
-import dev.filegate.core.inspection.CheckStatus;
-import dev.filegate.core.inspection.InputClaims;
-import dev.filegate.core.inspection.ReasonCode;
-import dev.filegate.core.internal.crypto.Digests;
-import dev.filegate.core.policy.CheckDescriptor;
-import dev.filegate.core.policy.CheckKind;
-import dev.filegate.core.policy.ExecutionMode;
-import dev.filegate.core.spi.InspectionCheck;
-import dev.filegate.core.spi.InspectionInput;
-
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 import java.util.Locale;
 
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.inspection.CheckStatus;
+import dev.filegate.core.inspection.InputClaims;
+import dev.filegate.core.inspection.ReasonCode;
+import dev.filegate.core.internal.crypto.Sha256;
+import dev.filegate.core.policy.CheckDescriptor;
+import dev.filegate.core.policy.CheckKind;
+import dev.filegate.core.policy.ExecutionMode;
+import dev.filegate.core.spi.PrefixInspectionCheck;
+
 /** Signature and claim checks only. A content inspector is still mandatory. */
-public final class PreflightCheck implements InspectionCheck {
+public final class PreflightCheck implements PrefixInspectionCheck {
     private final PreflightRules rules;
     private final CheckDescriptor descriptor;
 
@@ -45,20 +43,18 @@ public final class PreflightCheck implements InspectionCheck {
         this.rules = java.util.Objects.requireNonNull(rules, "rules");
         String canonical = rules.claims().name() + ":" + rules.allowedCandidates().stream()
                 .map(Enum::name).sorted().collect(java.util.stream.Collectors.joining(","));
-        String hash = HexFormat.of().formatHex(Digests.sha256().digest(canonical.getBytes(StandardCharsets.US_ASCII)));
+        String hash = HexFormat.of().formatHex(Sha256.newDigest().digest(canonical.getBytes(StandardCharsets.US_ASCII)));
         descriptor = new CheckDescriptor("core.preflight", "1", "signature-claims-v1-" + hash,
                 ExecutionMode.EMBEDDED, CheckKind.PREFLIGHT);
     }
 
     @Override public CheckDescriptor descriptor() { return descriptor; }
 
-    @Override public CheckEvidence inspect(InspectionInput input) throws IOException {
-        try (var stream = input.openStream()) {
-            return evaluate(stream.readNBytes(CandidateRecognition.PREFIX_BYTES), input.claims());
-        }
-    }
+    @Override public int prefixBytes() { return CandidateRecognition.PREFIX_BYTES; }
 
-    public CheckEvidence evaluate(byte[] prefix, InputClaims claims) {
+    @Override
+    public CheckEvidence inspectPrefix(byte[] prefix, InputClaims claims) {
+
         FormatCandidate candidate = CandidateRecognition.recognize(prefix);
         if (!rules.allowedCandidates().contains(candidate)) {
             return new CheckEvidence(descriptor.id(), CheckStatus.FAIL, ReasonCode.UNSUPPORTED_FORMAT);

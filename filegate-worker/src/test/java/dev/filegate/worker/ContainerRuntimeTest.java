@@ -20,11 +20,6 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,6 +28,12 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.io.TempDir;
+
+import dev.filegate.core.content.ArtifactIdentity;
 
 import static org.junit.jupiter.api.Assertions.*;
 

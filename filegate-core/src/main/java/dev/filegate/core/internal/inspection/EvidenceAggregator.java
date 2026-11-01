@@ -20,6 +20,14 @@
 
 package dev.filegate.core.internal.inspection;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.inspection.CheckStatus;
 import dev.filegate.core.inspection.InspectionReport;
@@ -28,14 +36,6 @@ import dev.filegate.core.inspection.Verdict;
 import dev.filegate.core.policy.CheckDescriptor;
 import dev.filegate.core.policy.CompiledPolicy;
 import dev.filegate.core.policy.PolicySpec;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public final class EvidenceAggregator {
     private EvidenceAggregator() {}

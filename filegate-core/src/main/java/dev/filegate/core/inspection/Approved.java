@@ -21,7 +21,6 @@
 package dev.filegate.core.inspection;
 
 import dev.filegate.core.content.ApprovedContent;
-
 import dev.filegate.core.internal.inspection.ApprovedInspection;
 
 /** Only the inspection engine can issue an approved-content capability. */

@@ -20,10 +20,10 @@
 
 package dev.filegate.core.internal.validation;
 
-public final class Names {
-    private Names() {}
+public final class Identifiers {
+    private Identifiers() {}
 
-    public static String token(String value) {
+    public static String requireToken(String value) {
         if (value == null || !value.matches("[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}")) {
             throw new IllegalArgumentException("Expected a bounded ASCII identifier");
         }

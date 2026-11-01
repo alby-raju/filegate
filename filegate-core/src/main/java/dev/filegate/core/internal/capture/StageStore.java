@@ -20,35 +20,26 @@
 
 package dev.filegate.core.internal.capture;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.inspection.CheckEvidence;
-import dev.filegate.core.inspection.CheckStatus;
-import dev.filegate.core.inspection.InputClaims;
-import dev.filegate.core.inspection.ReasonCode;
-import dev.filegate.core.internal.crypto.Digests;
-import dev.filegate.core.internal.resource.ResourceLedger;
-import dev.filegate.core.preflight.CandidateRecognition;
-import dev.filegate.core.preflight.PreflightCheck;
-import dev.filegate.core.resource.ResourceLimits;
-import dev.filegate.core.resource.ResourceUsage;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.HexFormat;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.inspection.InputClaims;
+import dev.filegate.core.inspection.ReasonCode;
+import dev.filegate.core.internal.resource.ResourceLedger;
+import dev.filegate.core.resource.ResourceLimits;
+import dev.filegate.core.resource.ResourceUsage;
+import dev.filegate.core.spi.PrefixInspectionCheck;
+
 public final class StageStore implements AutoCloseable {
     @FunctionalInterface interface Deleter { void delete(Path path) throws IOException; }
-    public record Capture(CapturedArtifact artifact, ReasonCode failure, CheckEvidence preflightEvidence) {
-        public Capture(CapturedArtifact artifact, ReasonCode failure) { this(artifact, failure, null); }
-    }
-
     private final Path root;
-    private final ResourceLimits limits;
+    private final CaptureReader reader;
     private final ResourceLedger ledger;
     private final Deleter deleter;
     private final Set<CapturedArtifact> artifacts = ConcurrentHashMap.newKeySet();
@@ -60,7 +51,7 @@ public final class StageStore implements AutoCloseable {
     }
 
     StageStore(Path parent, ResourceLimits limits, Deleter deleter) throws IOException {
-        this.limits = limits;
+        this.reader = new CaptureReader(limits.captureBufferBytes());
         this.ledger = new ResourceLedger(limits);
         this.deleter = deleter;
         // Unsupported permissions fail construction; there is no world-readable fallback.
@@ -68,107 +59,53 @@ public final class StageStore implements AutoCloseable {
                 PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
     }
 
-    public Capture capture(InputStream source, long maxBytes) {
-        return capture(source, maxBytes, InputClaims.NONE, null);
+    public CaptureResult capture(InputStream source, long maxBytes) {
+        return capture(source, maxBytes, InputClaims.NONE, java.util.List.of());
     }
 
-    public Capture capture(InputStream source, long maxBytes, InputClaims claims, PreflightCheck preflight) {
+    public CaptureResult capture(InputStream source, long maxBytes, InputClaims claims,
+                                 java.util.List<PrefixInspectionCheck> prefixChecks) {
+        var prefix = new CapturePrefix(prefixChecks, claims);
         ResourceLedger.Reservation reservation;
         synchronized (this) {
             if (closed) throw new IllegalStateException("Gate is closed");
             var admitted = ledger.reserve(maxBytes);
-            if (admitted.isEmpty()) return new Capture(null, ReasonCode.CAPACITY_EXHAUSTED);
+            if (admitted.isEmpty()) return new CaptureResult.Denied(ReasonCode.CAPACITY_EXHAUSTED, java.util.List.of());
             reservation = admitted.get();
             captures++;
         }
         Path path = null;
-        CapturedArtifact captured = null;
-        ReasonCode failure = null;
-        CheckEvidence preflightEvidence = null;
+        CapturedArtifact artifact = null;
         try {
             path = Files.createTempFile(root, "artifact-", ".stage",
                     PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")));
-            var digest = Digests.sha256();
-            long count = 0;
-            byte[] buffer = new byte[limits.captureBufferBytes()];
-            byte[] prefix = new byte[CandidateRecognition.PREFIX_BYTES];
-            int prefixLength = 0;
+            ArtifactIdentity identity;
             try (var output = Files.newOutputStream(path)) {
-                while (true) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        failure = ReasonCode.CANCELLED;
-                        break;
-                    }
-                    // Read at most one byte beyond the policy limit, without overflow.
-                    int wanted = (int) Math.min(buffer.length,
-                            maxBytes - count >= buffer.length ? buffer.length : maxBytes - count + 1);
-                    if (preflight != null && preflightEvidence == null) {
-                        wanted = Math.min(wanted, prefix.length - prefixLength);
-                    }
-                    int read = source.read(buffer, 0, wanted);
-                    if (read == -1) {
-                        if (preflight != null && preflightEvidence == null) {
-                            preflightEvidence = preflight.evaluate(java.util.Arrays.copyOf(prefix, prefixLength), claims);
-                            if (preflightEvidence.status() != CheckStatus.PASS) failure = preflightEvidence.reason();
-                        }
-                        break;
-                    }
-                    if (read == 0) {
-                        // Defensive progress for broken streams; host still owns transport timeouts.
-                        int next = source.read();
-                        if (next == -1) {
-                            if (preflight != null && preflightEvidence == null) {
-                                preflightEvidence = preflight.evaluate(java.util.Arrays.copyOf(prefix, prefixLength), claims);
-                                if (preflightEvidence.status() != CheckStatus.PASS) failure = preflightEvidence.reason();
-                            }
-                            break;
-                        }
-                        buffer[0] = (byte) next;
-                        read = 1;
-                    }
-                    if (read > maxBytes - count) {
-                        failure = ReasonCode.INPUT_TOO_LARGE;
-                        break;
-                    }
-                    if (preflight != null && preflightEvidence == null) {
-                        System.arraycopy(buffer, 0, prefix, prefixLength, read);
-                        prefixLength += read;
-                        if (prefixLength == prefix.length) {
-                            preflightEvidence = preflight.evaluate(prefix, claims);
-                            if (preflightEvidence.status() != CheckStatus.PASS) {
-                                failure = preflightEvidence.reason();
-                                break;
-                            }
-                        }
-                    }
-                    output.write(buffer, 0, read);
-                    digest.update(buffer, 0, read);
-                    count += read;
-                }
+                identity = reader.copy(source, output, maxBytes, prefix);
             }
-            if (failure == null) {
-                // Close capture writer, then remove write permission before any inspector runs.
-                Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("r--------"));
-                captured = new CapturedArtifact(path,
-                        new ArtifactIdentity(count, HexFormat.of().formatHex(digest.digest())), this, reservation);
-                artifacts.add(captured);
-            }
-        } catch (IOException | RuntimeException e) {
-            if (failure == null) failure = ReasonCode.CAPTURE_FAILED;
+            Files.setPosixFilePermissions(path, PosixFilePermissions.fromString("r--------"));
+            artifact = new CapturedArtifact(path, identity, this, reservation);
+            artifacts.add(artifact);
+            return new CaptureResult.Captured(artifact, prefix.evidence());
+        } catch (CaptureFailure denied) {
+            return new CaptureResult.Denied(denied.reason(), prefix.evidence());
+        } catch (IOException | RuntimeException unavailable) {
+            return new CaptureResult.Denied(ReasonCode.CAPTURE_FAILED, prefix.evidence());
         } finally {
-            if (captured == null) {
-                if (path == null) {
-                    reservation.close();
-                } else {
-                    var discarded = new CapturedArtifact(path, null, this, reservation);
-                    artifacts.add(discarded);
-                    discarded.close();
-                }
-            }
+            if (artifact == null) discard(path, reservation);
             synchronized (this) { captures--; }
             removeDeletedAndMaybeRoot();
         }
-        return new Capture(captured, failure, preflightEvidence);
+    }
+
+    private void discard(Path path, ResourceLedger.Reservation reservation) {
+        if (path == null) {
+            reservation.close();
+            return;
+        }
+        var discarded = new CapturedArtifact(path, null, this, reservation);
+        artifacts.add(discarded);
+        discarded.close();
     }
 
     boolean delete(Path path) {

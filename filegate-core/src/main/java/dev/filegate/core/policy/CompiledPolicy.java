@@ -20,15 +20,9 @@
 
 package dev.filegate.core.policy;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,7 +36,7 @@ public final class CompiledPolicy {
     private CompiledPolicy(PolicySpec spec, List<CheckDescriptor> checks) {
         this.spec = spec;
         this.checks = List.copyOf(checks);
-        this.fingerprint = fingerprint(spec, checks);
+        this.fingerprint = PolicyFingerprint.compute(spec, checks);
     }
 
     public static CompiledPolicy compile(PolicySpec spec, Collection<CheckDescriptor> installed) {
@@ -81,28 +75,4 @@ public final class CompiledPolicy {
     public List<CheckDescriptor> checks() { return checks; }
     public String fingerprint() { return fingerprint; }
 
-    private static String fingerprint(PolicySpec spec, List<CheckDescriptor> checks) {
-        try {
-            var bytes = new ByteArrayOutputStream();
-            try (var output = new DataOutputStream(bytes)) {
-                // Versioned, length-delimited canonical encoding, independent of locale and map order.
-                output.writeUTF("filegate-policy-v2");
-                output.writeUTF(spec.name());
-                output.writeUTF(spec.use().name());
-                output.writeLong(spec.maxInputBytes());
-                output.writeUTF(spec.executionMode().name());
-                output.writeInt(checks.size());
-                for (CheckDescriptor check : checks) {
-                    output.writeUTF(check.id());
-                    output.writeUTF(check.version());
-                    output.writeUTF(check.coverageProfile());
-                    output.writeUTF(check.executionMode().name());
-                    output.writeUTF(check.kind().name());
-                }
-            }
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes.toByteArray()));
-        } catch (IOException | NoSuchAlgorithmException impossible) {
-            throw new IllegalStateException(impossible);
-        }
-    }
 }

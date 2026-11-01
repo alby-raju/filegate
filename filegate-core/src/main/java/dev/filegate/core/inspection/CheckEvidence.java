@@ -20,14 +20,14 @@
 
 package dev.filegate.core.inspection;
 
-import dev.filegate.core.internal.validation.Names;
-
 import java.util.Objects;
+
+import dev.filegate.core.internal.validation.Identifiers;
 
 /** One bounded check result. Free-form parser diagnostics are deliberately excluded. */
 public record CheckEvidence(String checkId, CheckStatus status, ReasonCode reason) {
     public CheckEvidence {
-        checkId = Names.token(checkId);
+        checkId = Identifiers.requireToken(checkId);
         Objects.requireNonNull(status, "status");
         Objects.requireNonNull(reason, "reason");
         if (reason.status() != status) {

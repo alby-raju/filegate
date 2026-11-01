@@ -20,11 +20,11 @@
 
 package dev.filegate.core.internal.content;
 
+import java.util.UUID;
+
 import dev.filegate.core.content.ArtifactIdentity;
 import dev.filegate.core.content.TransferReceipt;
 import dev.filegate.core.policy.Use;
-
-import java.util.UUID;
 
 /** Scoped transfer evidence, not a portable authorization or persistence token. */
 public final class VerifiedTransferReceipt implements TransferReceipt {

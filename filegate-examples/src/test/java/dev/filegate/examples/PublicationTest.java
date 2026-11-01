@@ -20,6 +20,15 @@
 
 package dev.filegate.examples;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import dev.filegate.core.FileGate;
 import dev.filegate.core.inspection.Approved;
 import dev.filegate.core.inspection.CheckEvidence;
@@ -32,15 +41,6 @@ import dev.filegate.core.policy.Use;
 import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.spi.InspectionCheck;
 import dev.filegate.core.spi.InspectionInput;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 

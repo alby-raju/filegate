@@ -20,12 +20,12 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.policy.PolicySpec;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.policy.PolicySpec;
 
 /** Every response must match all fields, including the exact expected check set. */
 public record ProtocolBinding(UUID requestId, ArtifactIdentity artifact, String policyFingerprint,

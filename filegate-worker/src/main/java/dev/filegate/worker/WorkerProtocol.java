@@ -20,12 +20,6 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.inspection.CheckEvidence;
-import dev.filegate.core.inspection.CheckStatus;
-import dev.filegate.core.policy.PolicySpec;
-import dev.filegate.core.inspection.ReasonCode;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -36,6 +30,12 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.UUID;
+
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.inspection.CheckStatus;
+import dev.filegate.core.inspection.ReasonCode;
+import dev.filegate.core.policy.PolicySpec;
 
 /** Versioned bounded binary frames. Never accepts Java object serialization or free-form diagnostics. */
 public final class WorkerProtocol {

@@ -20,6 +20,11 @@
 
 package dev.filegate.core.preflight;
 
+import java.util.List;
+import java.util.Set;
+
+import org.junit.jupiter.api.Test;
+
 import dev.filegate.core.inspection.CheckStatus;
 import dev.filegate.core.inspection.InputClaims;
 import dev.filegate.core.inspection.ReasonCode;
@@ -27,11 +32,6 @@ import dev.filegate.core.policy.CompiledPolicy;
 import dev.filegate.core.policy.ExecutionMode;
 import dev.filegate.core.policy.PolicySpec;
 import dev.filegate.core.policy.Use;
-
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,18 +51,18 @@ class PreflightTest {
 
     @Test void spoofedClaimsAndUnsupportedCandidatesReject() {
         var check = new PreflightCheck(new PreflightRules(Set.of(FormatCandidate.PNG), ClaimPolicy.REQUIRE_CONSISTENT));
-        assertEquals(CheckStatus.PASS, check.evaluate(PreflightFixtures.png(), new InputClaims("file.PNG", "IMAGE/PNG")).status());
-        assertEquals(ReasonCode.CLAIM_MISMATCH, check.evaluate(PreflightFixtures.png(), new InputClaims("file.pdf", "image/png")).reason());
-        assertEquals(ReasonCode.CLAIM_MISMATCH, check.evaluate(PreflightFixtures.png(), new InputClaims("file.png", "text/html")).reason());
-        assertEquals(ReasonCode.UNSUPPORTED_FORMAT, check.evaluate(new byte[8], InputClaims.NONE).reason());
-        assertEquals(CheckStatus.PASS, check.evaluate(PreflightFixtures.png(), InputClaims.NONE).status());
+        assertEquals(CheckStatus.PASS, check.inspectPrefix(PreflightFixtures.png(), new InputClaims("file.PNG", "IMAGE/PNG")).status());
+        assertEquals(ReasonCode.CLAIM_MISMATCH, check.inspectPrefix(PreflightFixtures.png(), new InputClaims("file.pdf", "image/png")).reason());
+        assertEquals(ReasonCode.CLAIM_MISMATCH, check.inspectPrefix(PreflightFixtures.png(), new InputClaims("file.png", "text/html")).reason());
+        assertEquals(ReasonCode.UNSUPPORTED_FORMAT, check.inspectPrefix(new byte[8], InputClaims.NONE).reason());
+        assertEquals(CheckStatus.PASS, check.inspectPrefix(PreflightFixtures.png(), InputClaims.NONE).status());
         var strict = new PreflightCheck(new PreflightRules(Set.of(FormatCandidate.PNG), ClaimPolicy.REQUIRE_PRESENT_AND_CONSISTENT));
-        assertEquals(ReasonCode.CLAIM_MISMATCH, strict.evaluate(PreflightFixtures.png(), InputClaims.NONE).reason());
+        assertEquals(ReasonCode.CLAIM_MISMATCH, strict.inspectPrefix(PreflightFixtures.png(), InputClaims.NONE).reason());
     }
 
     @Test void zipClaimNeverIdentifiesAnOfficePackage() {
         var check = new PreflightCheck(new PreflightRules(Set.of(FormatCandidate.ZIP_CONTAINER), ClaimPolicy.REQUIRE_CONSISTENT));
-        assertEquals(CheckStatus.PASS, check.evaluate(new byte[] {'P', 'K', 3, 4},
+        assertEquals(CheckStatus.PASS, check.inspectPrefix(new byte[] {'P', 'K', 3, 4},
                 new InputClaims("file.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")).status());
         assertEquals(FormatCandidate.ZIP_CONTAINER, CandidateRecognition.recognize(new byte[] {'P', 'K', 3, 4}));
     }

@@ -20,14 +20,6 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.inspection.CheckEvidence;
-import dev.filegate.core.inspection.CheckStatus;
-import dev.filegate.core.inspection.ReasonCode;
-import dev.filegate.core.policy.PolicySpec;
-
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -35,6 +27,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.inspection.CheckStatus;
+import dev.filegate.core.inspection.ReasonCode;
+import dev.filegate.core.policy.PolicySpec;
 
 import static org.junit.jupiter.api.Assertions.*;
 

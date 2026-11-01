@@ -20,22 +20,6 @@
 
 package dev.filegate.core.inspection;
 
-import dev.filegate.core.FileGate;
-import dev.filegate.core.policy.CheckDescriptor;
-import dev.filegate.core.policy.CompiledPolicy;
-import dev.filegate.core.policy.ExecutionMode;
-import dev.filegate.core.policy.PolicySpec;
-import dev.filegate.core.policy.Use;
-import dev.filegate.core.resource.ResourceLimits;
-import dev.filegate.core.spi.InspectionCheck;
-import dev.filegate.core.spi.InspectionInput;
-
-import org.junit.jupiter.api.Test;
-import dev.filegate.core.testing.TestPolicies;
-import dev.filegate.core.testing.TestChecks.Body;
-import static dev.filegate.core.testing.TestChecks.check;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +30,21 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import dev.filegate.core.FileGate;
+import dev.filegate.core.policy.CompiledPolicy;
+import dev.filegate.core.policy.ExecutionMode;
+import dev.filegate.core.policy.PolicySpec;
+import dev.filegate.core.policy.Use;
+import dev.filegate.core.resource.ResourceLimits;
+import dev.filegate.core.spi.InspectionCheck;
+import dev.filegate.core.spi.InspectionInput;
+import dev.filegate.core.testing.TestChecks.Body;
+import dev.filegate.core.testing.TestPolicies;
+
+import static dev.filegate.core.testing.TestChecks.check;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InspectionLifecycleTest {

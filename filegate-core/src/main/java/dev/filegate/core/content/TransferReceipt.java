@@ -20,9 +20,8 @@
 
 package dev.filegate.core.content;
 
-import dev.filegate.core.policy.Use;
-
 import dev.filegate.core.internal.content.VerifiedTransferReceipt;
+import dev.filegate.core.policy.Use;
 
 /** Transfer evidence, not a portable authorization or persistence token. */
 public sealed interface TransferReceipt permits VerifiedTransferReceipt {

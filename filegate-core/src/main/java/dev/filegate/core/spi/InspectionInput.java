@@ -20,12 +20,12 @@
 
 package dev.filegate.core.spi;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.inspection.InputClaims;
-
-import dev.filegate.core.internal.inspection.ScopedInspectionInput;
 import java.io.IOException;
 import java.io.InputStream;
+
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.inspection.InputClaims;
+import dev.filegate.core.internal.inspection.ScopedInspectionInput;
 
 /** Inspector-scoped read access with at most one open stream and no stage path. */
 public sealed interface InspectionInput extends AutoCloseable permits ScopedInspectionInput {

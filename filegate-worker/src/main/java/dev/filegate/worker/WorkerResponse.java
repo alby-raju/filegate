@@ -20,13 +20,13 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.inspection.CheckEvidence;
-import dev.filegate.core.policy.PolicySpec;
-
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+
+import dev.filegate.core.inspection.CheckEvidence;
+import dev.filegate.core.policy.PolicySpec;
 
 public record WorkerResponse(ProtocolBinding binding, List<CheckEvidence> evidence) {
     public WorkerResponse {

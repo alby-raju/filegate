@@ -20,15 +20,16 @@
 
 package dev.filegate.worker;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import org.junit.jupiter.api.Test;
-
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.Test;
+
+import dev.filegate.core.content.ArtifactIdentity;
 
 import static org.junit.jupiter.api.Assertions.*;
 

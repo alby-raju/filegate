@@ -166,3 +166,11 @@ preparation, storage qualification, security review and adoption evidence.
   coupling. The migrated reactor passes 63 native tests; two Linux-only tests are
   skipped locally. External client compilation verifies module encapsulation,
   and `jdeps` still reports `java.base` only.
+
+- Architecture cleanup 2: FileGate delegates to immutable bound plans, an
+  inspection engine and a sequential runner. Capture byte processing, prefix
+  state and filesystem ownership are separate. Typed capture outcomes replace
+  nullable tuples; one invocation boundary translates check failures. The bounded
+  prefix SPI supports independent plugins without concrete preflight dependencies.
+  Policy encoding is isolated without changing its format. All 66 native tests
+  pass; two Linux-only tests remain intentionally skipped locally.

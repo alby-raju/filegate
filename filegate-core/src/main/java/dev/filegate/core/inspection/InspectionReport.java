@@ -20,11 +20,11 @@
 
 package dev.filegate.core.inspection;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.policy.CompiledPolicy;
-
 import java.util.List;
 import java.util.Optional;
+
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.policy.CompiledPolicy;
 
 /** Completed checks and host obligations are separate; no host obligation is a PASS. */
 public final class InspectionReport {

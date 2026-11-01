@@ -20,13 +20,13 @@
 
 package dev.filegate.core.internal.capture;
 
-import dev.filegate.core.content.ArtifactIdentity;
-import dev.filegate.core.internal.resource.ResourceLedger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import dev.filegate.core.content.ArtifactIdentity;
+import dev.filegate.core.internal.resource.ResourceLedger;
 
 /** Package-private stage ownership. Paths never cross the public API. */
 public final class CapturedArtifact implements AutoCloseable {

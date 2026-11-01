@@ -20,11 +20,12 @@
 
 package dev.filegate.core.testing;
 
+import java.util.List;
+
 import dev.filegate.core.policy.CompiledPolicy;
 import dev.filegate.core.policy.ExecutionMode;
 import dev.filegate.core.policy.PolicySpec;
 import dev.filegate.core.policy.Use;
-import java.util.List;
 
 public final class TestPolicies {
     private TestPolicies() {}

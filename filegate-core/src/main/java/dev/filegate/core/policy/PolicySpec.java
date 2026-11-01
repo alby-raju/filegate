@@ -20,10 +20,10 @@
 
 package dev.filegate.core.policy;
 
-import dev.filegate.core.internal.validation.Names;
-
 import java.util.List;
 import java.util.Objects;
+
+import dev.filegate.core.internal.validation.Identifiers;
 
 /** Typed configuration; there is deliberately no permissive string-key parser. */
 public record PolicySpec(String name, Use use, long maxInputBytes,
@@ -31,7 +31,7 @@ public record PolicySpec(String name, Use use, long maxInputBytes,
     public static final int MAX_CHECKS = 64;
 
     public PolicySpec {
-        name = Names.token(name);
+        name = Identifiers.requireToken(name);
         Objects.requireNonNull(use, "use");
         Objects.requireNonNull(executionMode, "executionMode");
         if (maxInputBytes <= 0) {
@@ -42,7 +42,7 @@ public record PolicySpec(String name, Use use, long maxInputBytes,
             throw new IllegalArgumentException("A policy requires 1 to 64 explicit checks");
         }
         requiredChecks = List.copyOf(requiredChecks);
-        requiredChecks.forEach(Names::token);
+        requiredChecks.forEach(Identifiers::requireToken);
         if (requiredChecks.stream().distinct().count() != requiredChecks.size()) {
             throw new IllegalArgumentException("Duplicate required check");
         }

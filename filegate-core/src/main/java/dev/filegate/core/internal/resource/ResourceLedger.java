@@ -20,10 +20,10 @@
 
 package dev.filegate.core.internal.resource;
 
+import java.util.Optional;
+
 import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.resource.ResourceUsage;
-
-import java.util.Optional;
 
 public final class ResourceLedger {
     private final ResourceLimits limits;

@@ -20,14 +20,14 @@
 
 package dev.filegate.core.internal.inspection;
 
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import dev.filegate.core.content.ArtifactIdentity;
 import dev.filegate.core.inspection.InputClaims;
 import dev.filegate.core.internal.capture.CapturedArtifact;
 import dev.filegate.core.spi.InspectionInput;
-
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 /** Scoped, read-only access for an inspector. At most one stream may be open at a time. */
 public final class ScopedInspectionInput implements InspectionInput {

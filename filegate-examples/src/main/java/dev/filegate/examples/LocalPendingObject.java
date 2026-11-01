@@ -20,9 +20,6 @@
 
 package dev.filegate.examples;
 
-import dev.filegate.core.content.TransferReceipt;
-import dev.filegate.core.policy.Use;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
@@ -37,6 +34,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.Objects;
 import java.util.UUID;
+
+import dev.filegate.core.content.TransferReceipt;
+import dev.filegate.core.policy.Use;
 
 /**
  * POSIX host example, not a universal storage adapter. A hard link publishes an

@@ -20,9 +20,9 @@
 
 package dev.filegate.core.policy;
 
-import dev.filegate.core.internal.validation.Names;
-
 import java.util.Objects;
+
+import dev.filegate.core.internal.validation.Identifiers;
 
 /** Explicit capability identity. Version identifies the installed inspector build. */
 public record CheckDescriptor(String id, String version, String coverageProfile,
@@ -32,9 +32,9 @@ public record CheckDescriptor(String id, String version, String coverageProfile,
     }
 
     public CheckDescriptor {
-        id = Names.token(id);
-        version = Names.token(version);
-        coverageProfile = Names.token(coverageProfile);
+        id = Identifiers.requireToken(id);
+        version = Identifiers.requireToken(version);
+        coverageProfile = Identifiers.requireToken(coverageProfile);
         Objects.requireNonNull(executionMode, "executionMode");
         Objects.requireNonNull(kind, "kind");
     }

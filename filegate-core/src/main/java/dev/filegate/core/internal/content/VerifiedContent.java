@@ -20,21 +20,21 @@
 
 package dev.filegate.core.internal.content;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HexFormat;
+import java.util.Objects;
+
 import dev.filegate.core.content.ApprovedContent;
 import dev.filegate.core.content.ArtifactIdentity;
 import dev.filegate.core.content.TransferException;
 import dev.filegate.core.content.TransferFailure;
 import dev.filegate.core.content.TransferReceipt;
 import dev.filegate.core.internal.capture.CapturedArtifact;
-import dev.filegate.core.internal.crypto.Digests;
-import dev.filegate.core.internal.validation.Names;
+import dev.filegate.core.internal.crypto.Sha256;
+import dev.filegate.core.internal.validation.Identifiers;
 import dev.filegate.core.policy.CompiledPolicy;
 import dev.filegate.core.policy.Use;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HexFormat;
-import java.util.Objects;
 
 /** Scoped capability for approved bytes. Publication APIs verify bytes on every copy. */
 public final class VerifiedContent implements ApprovedContent, AutoCloseable {
@@ -60,13 +60,13 @@ public final class VerifiedContent implements ApprovedContent, AutoCloseable {
     public TransferReceipt copyTo(OutputStream output, String pendingDestinationId, Use destinationUse)
             throws TransferException {
         Objects.requireNonNull(output, "output");
-        Names.token(pendingDestinationId);
+        Identifiers.requireToken(pendingDestinationId);
         Objects.requireNonNull(destinationUse, "destinationUse");
         if (destinationUse != policy.use()) {
             throw new IllegalArgumentException("Destination use differs from approved use");
         }
         try (var lease = artifact.retain(); var input = lease.open()) {
-            var digest = Digests.sha256();
+            var digest = Sha256.newDigest();
             byte[] buffer = new byte[bufferBytes];
             long count = 0;
             while (true) {

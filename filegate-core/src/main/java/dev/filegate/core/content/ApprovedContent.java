@@ -20,10 +20,10 @@
 
 package dev.filegate.core.content;
 
-import dev.filegate.core.policy.Use;
+import java.io.OutputStream;
 
 import dev.filegate.core.internal.content.VerifiedContent;
-import java.io.OutputStream;
+import dev.filegate.core.policy.Use;
 
 /** Scoped capability for approved bytes; no raw stage path or constructor is public. */
 public sealed interface ApprovedContent permits VerifiedContent {

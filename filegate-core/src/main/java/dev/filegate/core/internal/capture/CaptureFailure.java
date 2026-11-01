@@ -18,18 +18,21 @@
  * limitations under the License.
  */
 
-package dev.filegate.core.internal.crypto;
+package dev.filegate.core.internal.capture;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
 
-public final class Digests {
-    private Digests() {}
-    public static MessageDigest sha256() {
-        try {
-            return MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException impossible) {
-            throw new IllegalStateException(impossible);
-        }
+import dev.filegate.core.inspection.ReasonCode;
+
+/** Internal control flow preserves a known violation even if closing the writer also fails. */
+final class CaptureFailure extends IOException {
+    private static final long serialVersionUID = 1L;
+    private final ReasonCode reason;
+
+    CaptureFailure(ReasonCode reason) {
+        super(reason.name());
+        this.reason = reason;
     }
+
+    ReasonCode reason() { return reason; }
 }

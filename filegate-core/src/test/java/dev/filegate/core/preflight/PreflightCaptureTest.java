@@ -20,6 +20,14 @@
 
 package dev.filegate.core.preflight;
 
+import java.io.ByteArrayInputStream;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import dev.filegate.core.FileGate;
 import dev.filegate.core.inspection.Blocked;
 import dev.filegate.core.inspection.CheckEvidence;
@@ -33,15 +41,7 @@ import dev.filegate.core.policy.PolicySpec;
 import dev.filegate.core.policy.Use;
 import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.spi.InspectionCheck;
-
-import org.junit.jupiter.api.Test;
 import dev.filegate.core.testing.TestChecks;
-import org.junit.jupiter.api.io.TempDir;
-
-import java.io.ByteArrayInputStream;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 

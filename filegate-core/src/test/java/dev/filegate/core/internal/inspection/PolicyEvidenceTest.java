@@ -20,6 +20,11 @@
 
 package dev.filegate.core.internal.inspection;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
 import dev.filegate.core.inspection.CheckEvidence;
 import dev.filegate.core.inspection.CheckStatus;
 import dev.filegate.core.inspection.ReasonCode;
@@ -30,13 +35,8 @@ import dev.filegate.core.policy.ExecutionMode;
 import dev.filegate.core.policy.PolicySpec;
 import dev.filegate.core.policy.Use;
 
-import org.junit.jupiter.api.Test;
 import static dev.filegate.core.testing.TestChecks.descriptor;
 import static dev.filegate.core.testing.TestPolicies.policy;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class PolicyEvidenceTest {
