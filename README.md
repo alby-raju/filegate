@@ -19,10 +19,13 @@ Requirements: JDK 21 and Maven 3.9 or later.
 mvn verify
 ```
 
-The initial reactor contains `filegate-core`, with a JDK-only runtime dependency
-boundary. JUnit is test-only. The tests exercise policy snapshots, capability
-validation, fingerprint binding and evidence precedence; no format coverage is
-claimed.
+The reactor contains `filegate-core` and a separate `filegate-examples` host
+adapter. Core requires only `java.base`; JUnit is test-only. Tests exercise policy,
+capture, resource and publication failures. No production format coverage is
+claimed. CI builds on Linux and macOS with Java 21.
+
+See the [integration guide](docs/integration.md) for API use, ownership, deployment
+limits and host publication obligations.
 
 ## Design
 
@@ -50,7 +53,8 @@ The proposal is design input, not evidence that the described guarantees exist.
 ## Repository structure
 
 ```text
-filegate-core/    Core Java module; implementation starts at M0
+filegate-core/    JDK-only policy, capture, inspection and verified transfer
+filegate-examples/ POSIX host publication example
 docs/design/     Original proposal and text transcription
 docs/decisions/  Recorded implementation decisions
 docs/roadmap.md  Work sequence and acceptance evidence
