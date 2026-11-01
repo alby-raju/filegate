@@ -26,7 +26,7 @@ claim. No slice may approve content with missing mandatory evidence.
 | M1.2 | Preflight integration and corpus | Capture-time envelope rejection, `NOT_RUN` evidence for skipped checks, ambiguous candidates; no format approval until supported inspectors exist | Complete |
 | M2.1 | Worker artifact and bounded protocol | Frame/evidence/stderr limits; request/digest/policy/build binding; stale, missing, duplicate and malformed responses block | Complete |
 | M2.2 | Fixed worker pool and lifecycle | One task per worker; bounded wait; crash/timeout termination; cancellation; restart backoff and saturation tests | Complete |
-| M2.3 | Supported Linux containment | Non-root, read-only code/input, no credentials/network, bounded memory/CPU/process/scratch; deployment-level escape and kill tests; no embedded fallback | Requires Linux validation environment |
+| M2.3 | Supported Linux containment | Non-root, read-only code/input, no credentials/network, bounded memory/CPU/process/scratch; deployment-level escape and kill tests; no embedded fallback | Implemented; CI validation pending |
 | M2.4 | Restricted PNG/JPEG inspectors | Published encoding/termination/trailing-data/animation/metadata/dimension coverage; bounded isolated decoding if promised; malformed corpus and fuzz regression | After M2.3 |
 | M3.1 | Freeze one adopter contract | Formats, intended use, AV, budgets, rejection tolerance, storage transaction semantics and representative corpus approved by adopter | Requires pilot decisions |
 | M3.2 | Complete required format coverage | PDF and/or DOCX/XLSX only if required; parser budgets and prohibited feature checks; no raw-keyword safety claims; pinned worker dependencies | After M3.1 |
@@ -125,3 +125,10 @@ not completed features.
   Unconfirmed termination quarantines the domain. Native JVM tests require host
   process enumeration; a subprocess is not containment and this pool is not yet
   accepted by the core as an isolated production executor.
+
+- M2.3 implementation: explicit immutable-image Linux runtime and effective
+  cgroup/mount/network probe added. Each task gets a disposable container and
+  confirmed removal; no host mounts or credentials are passed. Local tests skip
+  two actual-container tests by design. Linux CI now builds a digest-bound fixture
+  and must pass those tests before containment is recorded as validated. See
+  [worker deployment limits](linux-workers.md).

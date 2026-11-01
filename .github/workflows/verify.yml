@@ -27,3 +27,17 @@ jobs:
       - name: Verify JDK-only core runtime
         shell: bash
         run: test "$(jdeps --print-module-deps filegate-core/target/filegate-core-0.1.0-SNAPSHOT.jar)" = java.base
+      - name: Build immutable Linux containment fixture
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          docker pull eclipse-temurin:21-jre
+          base_image=$(docker image inspect --format '{{index .RepoDigests 0}}' eclipse-temurin:21-jre)
+          jar --create --file filegate-worker/target/worker-test-fixtures.jar -C filegate-worker/target/test-classes .
+          docker build --build-arg BASE_IMAGE="$base_image" --iidfile /tmp/filegate-worker-image -f deploy/linux/Dockerfile.smoke .
+      - name: Test effective Linux restrictions and timeout cleanup
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          export FILEGATE_DOCKER_IMAGE=$(cat /tmp/filegate-worker-image)
+          mvn -B -ntp verify

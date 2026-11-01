@@ -1,0 +1,5 @@
+.git
+docs
+**/src
+**/target/surefire-reports
+**/target/maven-status

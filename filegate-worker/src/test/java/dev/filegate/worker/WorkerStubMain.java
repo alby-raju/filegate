@@ -5,10 +5,27 @@ import dev.filegate.core.CheckEvidence;
 /** Transport fault fixture only. It does not inspect content. */
 public final class WorkerStubMain {
     public static void main(String[] args) throws Exception {
+        boolean sandbox = args[0].startsWith("sandbox-");
+        if (sandbox) LinuxContainmentProbe.verify(SandboxLimits.parse(args, 1));
         var request = WorkerProtocol.readRequest(System.in);
+        if (sandbox) {
+            if (request.artifact().length() > 1024) throw new IllegalArgumentException("Fixture payload limit");
+            var digest = java.security.MessageDigest.getInstance("SHA-256");
+            long length = 0;
+            byte[] buffer = new byte[128];
+            for (int read; (read = System.in.read(buffer)) != -1;) {
+                length += read;
+                if (length > request.artifact().length()) throw new java.io.IOException("Wrong payload length");
+                digest.update(buffer, 0, read);
+            }
+            if (length != request.artifact().length()
+                    || !java.util.HexFormat.of().formatHex(digest.digest()).equals(request.artifact().sha256())) {
+                throw new java.io.IOException("Wrong payload identity");
+            }
+        }
         switch (args[0]) {
             case "crash" -> System.exit(7);
-            case "hang" -> Thread.sleep(60_000);
+            case "hang", "sandbox-hang" -> Thread.sleep(60_000);
             case "stderr" -> {
                 System.err.write(new byte[2048]);
                 System.err.flush();

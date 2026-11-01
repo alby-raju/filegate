@@ -1,6 +1,7 @@
 package dev.filegate.worker;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +41,11 @@ public final class WorkerPool implements AutoCloseable {
     public int activeProcesses() { return active.size(); }
 
     public WorkerRun execute(ProtocolBinding binding, List<String> command) {
+        return execute(binding, command, null);
+    }
+
+    /** Payload must be a bounded captured-file stream; caller owns and closes it. */
+    public WorkerRun execute(ProtocolBinding binding, List<String> command, InputStream payload) {
         validateCommand(command);
         if (closed.get()) return failed(WorkerFailure.CLOSED);
         if (Thread.currentThread().isInterrupted()) return failed(WorkerFailure.CANCELLED);
@@ -64,7 +70,19 @@ public final class WorkerPool implements AutoCloseable {
             active.add(process);
             Process worker = process;
             writer = io.submit(() -> {
-                try (var output = worker.getOutputStream()) { WorkerProtocol.writeRequest(output, binding); }
+                try (var output = worker.getOutputStream()) {
+                    WorkerProtocol.writeRequest(output, binding);
+                    if (payload != null) {
+                        byte[] buffer = new byte[8192];
+                        long count = 0;
+                        for (int read; (read = payload.read(buffer)) != -1;) {
+                            if (read > binding.artifact().length() - count) throw new IOException("Payload length mismatch");
+                            count += read;
+                            output.write(buffer, 0, read);
+                        }
+                        if (count != binding.artifact().length()) throw new IOException("Payload length mismatch");
+                    }
+                }
                 return null;
             });
             stderr = io.submit(() -> {
