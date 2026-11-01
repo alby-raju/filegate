@@ -1,0 +1,88 @@
+package dev.filegate.examples;
+
+import dev.filegate.core.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class PublicationTest {
+    @TempDir Path temp;
+    private FileGate gate() throws IOException {
+        var descriptor = new CheckDescriptor("test-check", "1", "test-only-no-format-coverage", ExecutionMode.EMBEDDED);
+        var policy = CompiledPolicy.compile(new PolicySpec("test", Use.DOWNLOAD, 32,
+                ExecutionMode.EMBEDDED, List.of("test-check")), List.of(descriptor));
+        var check = new InspectionCheck() {
+            public CheckDescriptor descriptor() { return descriptor; }
+            public CheckEvidence inspect(InspectionInput input) { return CheckEvidence.pass("test-check"); }
+        };
+        return FileGate.open(temp, new ResourceLimits(2, 64, 1024), policy, List.of(check));
+    }
+
+    @Test void publishesVerifiedPersistedBytesOnlyAfterFinalizationAndCommit() throws Exception {
+        try (var gate = gate(); var result = gate.inspect(new ByteArrayInputStream(new byte[] {1, 2}), InputClaims.NONE)) {
+            Path published = PublicationExample.publish(((Approved) result).content(), temp);
+            assertArrayEquals(new byte[] {1, 2}, Files.readAllBytes(published));
+            assertTrue(published.getFileName().toString().startsWith("object-"));
+        }
+    }
+
+    @Test void abandonedAndUnfinalizedDestinationsAbort() throws Exception {
+        Path target;
+        try (var pending = new LocalPendingObject(temp, Use.DOWNLOAD)) {
+            target = pending.objectPath();
+            pending.output().write(42);
+            assertThrows(IllegalStateException.class, () -> pending.commit(null));
+            assertFalse(Files.exists(target));
+        }
+        assertFalse(Files.exists(target));
+        try (var files = Files.list(temp)) { assertEquals(0, files.count()); }
+    }
+
+    @Test void wrongDestinationReceiptBlocksPublication() throws Exception {
+        try (var gate = gate(); var result = gate.inspect(new ByteArrayInputStream(new byte[] {1}), InputClaims.NONE);
+             var pending = new LocalPendingObject(temp, Use.DOWNLOAD)) {
+            var receipt = ((Approved) result).content().copyTo(pending.output(), "different-destination", Use.DOWNLOAD);
+            pending.finishWrites();
+            assertThrows(IllegalArgumentException.class, () -> pending.commit(receipt));
+            assertFalse(Files.exists(pending.objectPath()));
+        }
+    }
+
+    @Test void overwrittenPendingBytesCannotBePublished() throws Exception {
+        try (var gate = gate(); var result = gate.inspect(new ByteArrayInputStream(new byte[] {1, 2}), InputClaims.NONE);
+             var pending = new LocalPendingObject(temp, Use.DOWNLOAD)) {
+            var receipt = ((Approved) result).content().copyTo(pending.output(), pending.id(), Use.DOWNLOAD);
+            // A faulty host writer adds bytes after FileGate's copy; persistence validation must detect it.
+            pending.output().write(3);
+            pending.finishWrites();
+            assertThrows(IOException.class, () -> pending.commit(receipt));
+            assertFalse(Files.exists(pending.objectPath()));
+        }
+    }
+
+    @Test void failedFinalizationAndNameCollisionNeverPublishOrOverwrite() throws Exception {
+        try (var gate = gate(); var result = gate.inspect(new ByteArrayInputStream(new byte[] {1}), InputClaims.NONE)) {
+            var content = ((Approved) result).content();
+            try (var pending = new LocalPendingObject(temp, Use.DOWNLOAD)) {
+                content.copyTo(pending.output(), pending.id(), Use.DOWNLOAD);
+                pending.output().close();
+                assertThrows(IOException.class, pending::finishWrites);
+                assertFalse(Files.exists(pending.objectPath()));
+            }
+            try (var pending = new LocalPendingObject(temp, Use.DOWNLOAD)) {
+                var receipt = content.copyTo(pending.output(), pending.id(), Use.DOWNLOAD);
+                pending.finishWrites();
+                Files.write(pending.objectPath(), new byte[] {99});
+                assertThrows(IOException.class, () -> pending.commit(receipt));
+                assertArrayEquals(new byte[] {99}, Files.readAllBytes(pending.objectPath()));
+            }
+        }
+    }
+}

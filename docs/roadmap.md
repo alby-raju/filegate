@@ -20,8 +20,8 @@ claim. No slice may approve content with missing mandatory evidence.
 | M0.1 | Immutable policies, explicit versioned checks, three outcomes and immutable evidence | Unknown/missing capabilities rejected; canonical fingerprints stable; missing/duplicate/foreign evidence blocks; rejection precedence | Complete |
 | M0.2 | Atomic resource admission and private bounded capture | Denial before reading; concurrent quota limits; actual byte counting; exact limit/limit+1; digest; source ownership; I/O and deletion failures | Complete |
 | M0.3 | Scoped inspection facade, sequential embedded checks and content leases | Only complete evidence grants a handle; inspector failures incomplete; close blocks new copies; active copies retain storage; no public stage path | Complete |
-| M0.4 | Verified release, receipt binding and abort-safe local storage example | Tampering, truncated/failed copies, wrong use/destination, abandoned targets, finalization and commit failures; persisted bytes verified | Next |
-| M0.5 | Integration docs and CI | Executable workflow example; JDK-only packaged runtime; clean build on Java 21; documented host obligations and timeout limits | Planned |
+| M0.4 | Verified release, receipt binding and abort-safe local storage example | Tampering, truncated/failed copies, wrong use/destination, abandoned targets, finalization and commit failures; persisted bytes verified | Complete |
+| M0.5 | Integration docs and CI | Executable workflow example; JDK-only packaged runtime; clean build on Java 21; documented host obligations and timeout limits | Next |
 | M1.1 | Bounded candidate recognition and claim policy | PNG/JPEG/PDF/ZIP candidates, short/truncated/unknown input, spoofed claims; signatures never substitute for required structure checks | Planned |
 | M1.2 | Preflight integration and corpus | Capture-time envelope rejection, `NOT_RUN` evidence for skipped checks, ambiguous candidates; no format approval until supported inspectors exist | Planned |
 | M2.1 | Worker artifact and bounded protocol | Frame/evidence/stderr limits; request/digest/policy/build binding; stale, missing, duplicate and malformed responses block | Planned |
@@ -88,3 +88,10 @@ not completed features.
   complete evidence. Path inputs are copied. Reloads preserve in-flight snapshots;
   leases retain storage after owner close. Unsupported isolated execution fails
   at construction. Existing results remain caller-owned after closing the gate.
+
+- M0.4: `mvn verify` passes 32 tests across core and host examples. Transfers
+  detect replaced/truncated/extended stages, bind use/destination receipts and keep
+  active-copy leases through result close. The POSIX local example verifies
+  finalized persisted bytes and publishes with atomic no-replace hard linking;
+  abandon, wrong receipt, finalization failure and collision tests pass. Cloud
+  transaction and crash-durability semantics remain adapter-specific M3/M5 gates.

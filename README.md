@@ -6,7 +6,9 @@ derivative and require its own release checks.
 
 The foundation implements policy compilation, bounded private capture, sequential
 trusted embedded checks, immutable reports and scoped approved-content handles.
-Isolation, verified transfer and preparation are still under development. No
+Verified transfers bind receipts to destination IDs and uses; the host example
+checks persisted bytes before publication. Isolation and preparation are still
+under development. No
 production format profiles are installed; it is not ready to protect uploads.
 
 ## Build

@@ -13,6 +13,7 @@
 
   <modules>
     <module>filegate-core</module>
+    <module>filegate-examples</module>
   </modules>
 
   <properties>
