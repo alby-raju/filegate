@@ -27,6 +27,7 @@ COPY filegate-format-office/target/filegate-format-office-0.1.0-SNAPSHOT.jar /ap
 COPY filegate-format-spreadsheets/target/filegate-format-spreadsheets-0.1.0-SNAPSHOT.jar /app/spreadsheets.jar
 COPY filegate-spreadsheets-worker/target/filegate-spreadsheets-worker-0.1.0-SNAPSHOT.jar /app/spreadsheets-worker.jar
 COPY filegate-spreadsheets-worker/target/worker-libs/ /app/
+COPY filegate-spreadsheets-worker/target/spreadsheet-test-fixtures.jar /app/spreadsheet-test-fixtures.jar
 USER 65534:65534
 WORKDIR /tmp
 ENTRYPOINT ["java"]

@@ -53,7 +53,7 @@ public final class RestrictedSpreadsheetInspector {
 		} catch (InvalidFormatException | IllegalArgumentException | IllegalStateException malformed) {
 			throw new SpreadsheetViolation("Spreadsheet model is invalid or unsupported");
 		} catch (RuntimeException uncertain) {
-			throw new IOException("Spreadsheet parser could not complete");
+			throw new IOException("Spreadsheet parser could not complete", uncertain);
 		}
 	}
 }
