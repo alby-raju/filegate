@@ -8,8 +8,8 @@ The foundation implements policy compilation, bounded private capture, sequentia
 trusted embedded checks, immutable reports and scoped approved-content handles.
 Verified transfers bind receipts to destination IDs and uses; the host example
 checks persisted bytes before publication. A separate Linux container runtime and
-restricted image inspector are implemented, with their integration still pending.
-No production format profiles are installed in the gate; it is not ready to
+restricted image inspector are connected through an explicit isolated adapter.
+No production format profiles are installed by default; it is not yet qualified to
 protect uploads. PDF/DOCX inspection and optional preparation remain planned.
 
 ## Build
@@ -60,7 +60,8 @@ The proposal is design input, not evidence that the described guarantees exist.
 ```text
 filegate-core/    JDK-only policy, capture, inspection and verified transfer
 filegate-worker/  Bounded protocol, process supervision and Linux container runtime
-filegate-format-images/ Restricted PNG/JPEG inspector; worker integration pending
+filegate-format-images/ Restricted PNG/JPEG inspector
+filegate-images-worker/ Linux-isolated image adapter and disposable worker
 filegate-examples/ POSIX host publication example
 docs/design/     Original proposal and text transcription
 docs/decisions/  Recorded implementation decisions

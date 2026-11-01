@@ -33,6 +33,7 @@ import dev.filegate.core.policy.CompiledPolicy;
 import dev.filegate.core.policy.ExecutionMode;
 import dev.filegate.core.resource.ResourceLimits;
 import dev.filegate.core.spi.InspectionCheck;
+import dev.filegate.core.spi.IsolatedInspectionCheck;
 import dev.filegate.core.spi.PrefixInspectionCheck;
 
 /**
@@ -74,9 +75,6 @@ public final class CheckRegistry {
 
 	public Plan bind(CompiledPolicy policy, ResourceLimits limits) {
 		Objects.requireNonNull(policy, "policy");
-		if (policy.executionMode() != ExecutionMode.EMBEDDED) {
-			throw new IllegalArgumentException("No isolated executor is installed; embedded fallback is forbidden");
-		}
 		if (policy.maxInputBytes() > limits.maxStagingBytes()) {
 			throw new IllegalArgumentException("Policy input allowance exceeds the stage envelope");
 		}
@@ -86,6 +84,11 @@ public final class CheckRegistry {
 			RegisteredCheck check = installed.get(required.id());
 			if (check == null || !required.equals(check.descriptor())) {
 				throw new IllegalArgumentException("Installed check does not match compiled capability");
+			}
+			if (required.kind() == CheckKind.CONTENT && policy.executionMode() == ExecutionMode.ISOLATED
+					&& (!(check.implementation() instanceof IsolatedInspectionCheck)
+							|| required.executionMode() != ExecutionMode.ISOLATED)) {
+				throw new IllegalArgumentException("Isolated content requires an explicit isolation adapter");
 			}
 			checks.add(check);
 			check.prefix().ifPresent(prefixes::add);

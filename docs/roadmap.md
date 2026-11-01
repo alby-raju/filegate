@@ -27,7 +27,7 @@ claim. No slice may approve content with missing mandatory evidence.
 | M2.1 | Worker artifact and bounded protocol | Frame/evidence/stderr limits; request/digest/policy/build binding; stale, missing, duplicate and malformed responses block | Complete |
 | M2.2 | Fixed worker pool and lifecycle | One task per worker; bounded wait; crash/timeout termination; cancellation; restart backoff and saturation tests | Complete |
 | M2.3 | Supported Linux containment | Non-root, read-only code/input, no credentials/network, bounded memory/CPU/process/scratch; deployment-level escape and kill tests; no embedded fallback | Implemented; Linux smoke validated, full security qualification open |
-| M2.4 | Restricted PNG/JPEG inspectors | Published encoding/termination/trailing-data/animation/metadata/dimension coverage; bounded isolated decoding if promised; malformed corpus and fuzz regression | Inspector implemented; isolated integration and broader corpus pending |
+| M2.4 | Restricted PNG/JPEG inspectors | Published encoding/termination/trailing-data/animation/metadata/dimension coverage; bounded isolated decoding if promised; malformed corpus and fuzz regression | Inspector and isolated adapter implemented; broader corpus and qualification pending |
 | M3.1 | Freeze one adopter contract | Formats, intended use, AV, budgets, rejection tolerance, storage transaction semantics and representative corpus approved by adopter | Requires pilot decisions |
 | M3.2 | Complete required format coverage | PDF and/or DOCX/XLSX only if required; parser budgets and prohibited feature checks; no raw-keyword safety claims; pinned worker dependencies | After M3.1 |
 | M3.3 | Required AV integration | Scan exact artifact; configured size/coverage limits; outages and uncertain results block; no implicit dependency activation | If pilot requires AV |
@@ -63,9 +63,8 @@ a complete adopter workflow.
 M0 foundation and M1 bounded preflight are implemented. M2 protocol, task
 supervision and Linux runtime are implemented; the Linux containment smoke test
 passes in CI. The restricted PNG/JPEG inspector has local regression coverage,
-but is not connected to the isolated gate executor yet. Stop at this checkpoint
-for the user-requested repository cleanup and enhancements before starting another
-implementation slice. Remaining M2–M5 work stays open, including PDF/DOCX, optional
+and is now connected through an explicit Linux-isolated adapter. Repository cleanup
+is complete and implementation has resumed at the user’s request. Remaining M2–M5 work stays open, including PDF/DOCX, optional
 preparation, storage qualification, security review and adoption evidence.
 
 ## Evidence log
@@ -204,3 +203,9 @@ preparation, storage qualification, security review and adoption evidence.
   later plugin metadata changes cannot change an existing gate’s budget. The full
   suite passes 67 native tests with two Linux-only tests skipped locally. All 101
   Java copyright headers and all four packaged license notices remain intact.
+
+- M2 isolated integration: added an explicit core isolation-adapter SPI and a
+  separate image-worker artifact. Ordinary embedded content checks cannot satisfy
+  an isolated policy. Image descriptors bind immutable image/profile identity;
+  workers verify containment and captured length/digest before parsing. Native
+  policy/failure tests pass; Linux end-to-end image evidence is pending this push.

@@ -46,7 +46,7 @@ image's JDK build must be pinned and inventoried before release.
 bytes and chunk/segment count limits. These values are deployment inputs, not
 production recommendations. PNG inflation uses fixed buffers; JPEG segment buffers
 are bounded by its 16-bit segment length. Full decoded pixel allocation belongs
-inside the planned OS memory envelope; pixel checks alone are not an RSS limit.
+inside the configured OS memory envelope; pixel checks alone are not an RSS limit.
 
 Definite supported-profile violations and truncation reject. Unexpected parser
 or I/O failures produce incomplete evidence. There is no antivirus, authenticity,
@@ -56,4 +56,5 @@ possible; successful local tests do not establish containment or release readine
 Six regression tests cover generated RGB/RGBA PNG and baseline JPEG, PNG CRC and
 zlib postconditions, truncation/trailing data, animation/unsupported metadata,
 progressive JPEG and explicit resource ceilings. The broader adversarial corpus,
-fuzzing, pinned worker integration and independent review remain roadmap gates.
+fuzzing and independent review remain roadmap gates. The explicit
+[isolated adapter](isolated-images.md) binds the image digest and profile limits.

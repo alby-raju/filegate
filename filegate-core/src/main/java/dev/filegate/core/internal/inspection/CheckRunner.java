@@ -29,6 +29,7 @@ import dev.filegate.core.inspection.CheckStatus;
 import dev.filegate.core.inspection.InputClaims;
 import dev.filegate.core.internal.capture.CapturedArtifact;
 import dev.filegate.core.internal.execution.CheckInvocation;
+import dev.filegate.core.spi.IsolatedInspectionCheck;
 
 /**
  * Sequential execution owns scoped inspector access; evidence aggregation is
@@ -45,7 +46,8 @@ final class CheckRunner {
 				continue;
 			CheckEvidence result = CheckInvocation.invoke(id, () -> {
 				try (var input = new ScopedInspectionInput(artifact, claims)) {
-					return check.implementation().inspect(input);
+					return check.implementation() instanceof IsolatedInspectionCheck isolated
+							? isolated.inspect(input, plan.policy()) : check.implementation().inspect(input);
 				}
 			});
 			evidence.add(result);

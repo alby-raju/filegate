@@ -21,6 +21,8 @@ FROM ${BASE_IMAGE}
 COPY filegate-core/target/filegate-core-0.1.0-SNAPSHOT.jar /app/core.jar
 COPY filegate-worker/target/filegate-worker-0.1.0-SNAPSHOT.jar /app/worker.jar
 COPY filegate-worker/target/worker-test-fixtures.jar /app/test-fixtures.jar
+COPY filegate-format-images/target/filegate-format-images-0.1.0-SNAPSHOT.jar /app/images.jar
+COPY filegate-images-worker/target/filegate-images-worker-0.1.0-SNAPSHOT.jar /app/images-worker.jar
 USER 65534:65534
 WORKDIR /tmp
 ENTRYPOINT ["java"]

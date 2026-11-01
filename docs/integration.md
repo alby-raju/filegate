@@ -112,8 +112,10 @@ Generic Java streams can block despite interruption. The host must configure
 request, read and destination write timeouts. Embedded checks are trusted code;
 interruption is cooperative, not containment. No hard end-to-end timeout,
 malware-absence, viewer-safety or de-identification claim is made. Deep hostile-file
-profiles require the planned isolated executor; current construction refuses
-isolated policies rather than substituting embedded execution.
+profiles require an explicit `IsolatedInspectionCheck`. Isolated policies refuse
+ordinary embedded content plugins. `filegate-images-worker` supplies
+`IsolatedImageCheck`, backed only by a verified `LinuxContainerRuntime`; failures
+never substitute local parsing. See [isolated images](isolated-images.md).
 
 The host still enforces authentication, authorization, request/multipart limits
 before framework spooling, serving headers, origin/viewer isolation, intended-use
