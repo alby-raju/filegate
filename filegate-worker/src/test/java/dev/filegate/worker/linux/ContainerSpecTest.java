@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -53,6 +55,21 @@ class ContainerSpecTest {
 		assertTrue(command.contains("65534:65534"));
 		assertFalse(command.stream()
 				.anyMatch(arg -> arg.startsWith("--mount") || arg.equals("--privileged") || arg.equals("--env-file")));
+	}
+
+	@Test
+	void commandAcceptsTheSpreadsheetWorkerArgumentCountAndRejectsLargerConfigurations() {
+		var spec = new ContainerSpec(Path.of("/usr/bin/docker"), "sha256:" + "a".repeat(64), 65534, 65534,
+				sandboxLimits());
+		var commands = new DockerCommands(spec, temp);
+		var arguments = new ArrayList<>(List.of("dev.filegate.spreadsheets.worker.internal.SpreadsheetWorkerMain"));
+		arguments.addAll(Collections.nCopies(20, "configuration"));
+
+		var command = commands.create("filegate-test", arguments);
+		assertEquals(arguments, command.subList(command.size() - arguments.size(), command.size()));
+
+		arguments.add("extra");
+		assertThrows(IllegalArgumentException.class, () -> commands.create("filegate-test", arguments));
 	}
 
 	@Test

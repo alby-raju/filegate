@@ -28,6 +28,9 @@ import java.util.List;
  * arguments.
  */
 final class DockerCommands {
+	// The spreadsheet worker uses a main class plus 20 configuration arguments.
+	private static final int MAX_JAVA_ARGUMENTS = 21;
+
 	private final ContainerSpec spec;
 	private final Path configuration;
 
@@ -39,7 +42,7 @@ final class DockerCommands {
 	List<String> create(String name, List<String> javaArguments) {
 		if (!name.matches("[A-Za-z0-9][A-Za-z0-9_.-]{0,127}"))
 			throw new IllegalArgumentException("Invalid container name");
-		if (javaArguments.isEmpty() || javaArguments.size() > 16
+		if (javaArguments.isEmpty() || javaArguments.size() > MAX_JAVA_ARGUMENTS
 				|| javaArguments.stream().anyMatch(arg -> arg == null || arg.length() > 256)) {
 			throw new IllegalArgumentException("Unbounded worker configuration");
 		}
